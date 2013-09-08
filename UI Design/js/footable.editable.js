@@ -190,7 +190,7 @@
             return;
         }
 		
-        /*All fields are sent for command=add, only id fields for command=delete.*/
+        
         $(curRow).find('td').each(function () {
 			//储存每个td的col name(head里定义)
             var fieldName = $.data(w.footable, tId + '_colNames')[$(this).index()];
@@ -202,7 +202,7 @@
 			
             //如果命令是add，那么该row所有内容都要送到服务器；不管命令是什么，都保存fooID那列的td
 			if (command == 'Add' || command == 'Update' || fieldIsIdCol) {
-                //如果该列非button，则存每个name value队
+                //如果该列非control，则存每个name value队
                 if (fieldIsControl === undefined) updateRecord[fieldName] = $(this).text();
                 else {
                     var ctlVal = $(this).find('button').val();
@@ -500,15 +500,37 @@
 						//找到新建行
 						var newRow = $(ft.table).find('tr.fooNewRow');
 						addButtonsToRow(newRow, buttons);
-						
-						//为选中行添加css
-						addCssToRow(newRow);
-						
-						$(newRow).attr('contentEditable', true);
-						$(newRow).find('td').find('button').each(function () {
-							$(this).parent().attr('contentEditable', false);
-						});
-						
+							
+						 
+						 $(newRow).find('td').each(function(index) {
+							 if ($(this).find('button').length <= 0) {
+								 var data_type = $(ft.table).find('th').eq(index).attr('data-type');
+								 
+							     if (data_type === undefined) {
+								     $(this).append('<input type="text">');
+							     }
+							     else if (data_type === "integer") {
+									 $(this).append('<input type="number">');
+								 }
+							     else if (data_type === "date") {
+									 $(this).append('<input type="date">');
+								 }
+							     else if (data_type === "option") {
+									 var newTd = '<select class="td_option" name="status">';
+									 var option=$(ft.table).find('th').eq(index).attr('data-option').split(":"); 
+									 for (i=0;i<option.length ;i++ ){
+										 newTd +='<option value="' + option[i] +'">' + option[i] +'</option>';
+									 }
+									 newTd += '</select>';
+									 $(this).append(newTd);
+								 }
+							     else if (data_type === "progress") {
+								     $(this).append('<input type="number"  name="quantity" min="0" max="100">');
+								 }
+							 }
+						 });
+						 
+						 
                     });
 					
 					
@@ -518,35 +540,48 @@
 						 
 						 
 						 $.data(w.footable, tId + '_oldRowValue', oldValue);
-						 //alert('oldRowValue = ' + $.data(w.footable, tId + '_oldRowValue'));
 						 
 						 
-						 /////
 						 $(curRow).find('td').each(function(index) {
-							 if ($(this).find('button').length <= 0) {
-								 if ($(this).find('div').length <=0)
-							         var value = $(this).text();
-								 else
-							         var value = $(this).find('div').text().trim();
-							     $(this).empty();
-							     var edit_before = $(ft.table).find('th').eq(index).attr('edit_format');
-							     var edit_after = $(ft.table).find('th').eq(index).attr('edit_format_suffix');
-							     if (edit_before === undefined) {
-								     $(this).append('<input type="text" value="'+ value + '">');
-							     }
-							     else if (edit_after === undefined) $(this).append(edit_before);
-							     else $(this).append(edit_before + value + edit_after);
-							 }
 							 
 							 oldValue.push($(this).html());
+							 
+							 if ($(this).find('button').length <= 0) {
+								 var data_type = $(ft.table).find('th').eq(index).attr('data-type');
+								 if ($(this).find('div').length <=0)
+							         var value = $(this).text();
+							     else if (data_type === "progress") {
+								     var val = $(this).text().trim();
+									 var value =val.substr(0,val.length-1);
+								 }
+								 else
+							         var value = $(this).text().trim();
+									 
+							     $(this).empty();
+								 
+							     if (data_type === undefined) {
+								     $(this).append('<input type="text" value="'+ value + '">');
+							     }
+							     else if (data_type === "integer") {
+									 $(this).append('<input type="number" value="'+ value + '">');
+								 }
+							     else if (data_type === "date") {
+									 $(this).append('<input type="date" value="'+ value + '">');
+								 }
+							     else if (data_type === "option") {
+									 var newTd = '<select class ="td_option" name="status">';
+									 var option=$(ft.table).find('th').eq(index).attr('data-option').split(":"); 
+									 for (i=0;i<option.length ;i++ ){
+										 newTd +='<option value="' + option[i] +'">' + option[i] +'</option>';
+									 }
+									 newTd += '</select>';
+									 $(this).append(newTd);
+								 }
+							     else if (data_type === "progress") {
+								     $(this).append('<input type="number"  name="quantity" min="0" max="100" value="'+ value + '">');
+								 }
+							 }
 						 });
-						 
-						 //////
-						
-						 /*$(curRow).attr('contentEditable', true);
-						 $(curRow).find('td').find('button').each(function () {
-						  	 $(this).parent().attr('contentEditable', false);
-					 	 });*/
 						 
 						 $(curRow).addClass('fooEditRow');
 						 switchButtons(e.target);
@@ -566,46 +601,47 @@
 					$(ft.table).on('click', 'button[value="Ok"]', function (e) {
 						var curRow = $(this).closest('tr');
 						
-						//确定添加行
-						if ($(curRow).hasClass('fooNewRow')) {
-							processCommand(e.target, 'Add');
-							
-							deleteCssToRow(curRow);
-							$(curRow).removeClass('fooNewRow');
-							$(curRow).attr('contentEditable', false);
-							switchButtons(e.target);
+						//确定删除行
+						if ($(curRow).hasClass('fooDeleteRow')) {
+							processCommand(e.target, 'Delete');
 						}
 						
-						//确定修改行
-						else if ($(curRow).hasClass('fooEditRow')) {
-							processCommand(e.target, 'Update');
-							
-							$(curRow).find('td').each(function() {
-								if ($(this).find('button').length <= 0) {
-									  if ($(this).find('input').length >0 ) {
-									      var value = $(this).find("INPUT").val();
-									      $(this).text(value);
-									      $(this).find("INPUT").remove();
-									  }
-									  
-									  //============
-									  else if ($(this).find('select').length <= 0) {
-									      var value = $('$(this).find("select") option:selected').text();
-										  alert('im here');
-										  $(this).empty();
-									      $(this).text(value);
-									  }
+						//确定添加or修改行
+						else {
+							//从input状态转为确定输入
+							$(curRow).find('td').each(function(index) {
+							 
+								var data_type = $(ft.table).find('th').eq(index).attr('data-type');
+								if (data_type === "option") {
+									var value = $('.td_option option:selected').val();
+									$(this).text(value);
 								}
+							    else if (data_type === "progress") {
+									var value = $(this).find("INPUT").val();
+									var newTd = '<div class="progress progress-success progress-striped"><div class="bar" style="width: ' + value + '%">' + value + '%</div></div>';
+									$(this).html(newTd);
+									
+								}
+								else {
+									var value = $(this).find("INPUT").val();
+									$(this).text(value);
+								}
+								
 							});
 							
-							/*$(curRow).removeClass('fooEditRow');
-							$(curRow).attr('contentEditable', false);*/
+							//确定添加行
+							if ($(curRow).hasClass('fooNewRow')) {
+								processCommand(e.target, 'Add');
+								$(curRow).removeClass('fooNewRow');
+							}
+							
+							//确定修改行
+							else if ($(curRow).hasClass('fooEditRow')) {
+								processCommand(e.target, 'Update');
+								$(curRow).removeClass('fooEditRow');
+							}
+							
 							switchButtons(e.target);
-						}
-						
-						//确定删除行
-						else if ($(curRow).hasClass('fooDeleteRow')) {
-							processCommand(e.target, 'Delete');
 						}
                     });
 					
@@ -620,9 +656,7 @@
 						
 						//取消行修改
 						else if ($(curRow).hasClass('fooEditRow')) {
-							deleteCssToRow(curRow);
 							$(curRow).removeClass('fooEditRow');
-							$(curRow).attr('contentEditable', false);
 							
 							var setValue = $.data(w.footable, tId + '_oldRowValue');
 							$(curRow).find('td').each(function(i) {
@@ -639,10 +673,6 @@
 						}
                     });
 					
-					
-                    /*$(ft.table).on('click', '.cancel', function (e) {
-						//var rowOldValue = $(this).closest('tr').clone(true, true));
-					});*/
                 } //footable_initialized
             }); //ft.table bind
 

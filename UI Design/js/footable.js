@@ -23,7 +23,8 @@
                 alpha: function (cell) {
                     return $(cell).data('value') || $.trim($(cell).text());
                 },
-                numeric: function (cell) {
+				///////////////numeric is changed to date
+                date: function (cell) {
                     var val = $(cell).data('value') || $(cell).text().replace(/[^0-9.\-]/g, '');
                     val = parseFloat(val);
                     if (isNaN(val)) val = 0;

@@ -8,11 +8,14 @@ header {
   background: #4c4c4c;
   border-bottom: 4px solid #83A8D6;}
   
-table input {
+table input, select{
   width: 100px;}
   
-table select {
-  width: 100px;}
+table input[type=number] {
+  width: 50px;}
+  
+table input[type=date] {
+  width: 125px;}
 
 .left_padding {
   padding-left: 7px;}
