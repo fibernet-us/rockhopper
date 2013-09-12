@@ -4,8 +4,14 @@
  * Rockhopper DB Schema
  * 
  * @author   Wen Bian
- * @version  1.10
- * @lud      9/10/2013
+ * @version  1.11
+ * @history
+ *   09/03/2013: created out of Rockhopper schema in Perl
+ *               added table RH_USER, RH_LOG, RH_TASK
+ *   09/12/2013: updated table RH_USER, removed last_activity_id
+ *
+ *
+ *
  *
  * @notes
  * in some cases foreign keys are not 'cascade on delete', so as to preserve 
@@ -53,8 +59,6 @@ CREATE TABLE RH_USER (
   location          varchar(255)            DEFAULT NULL,
   iconurl           varchar(255)            DEFAULT NULL,
   enabled           tinyint(1)    NOT NULL  DEFAULT 1,
-
-  last_activity_id  int           NOT NULL,
 
   PRIMARY KEY (id),
   UNIQUE KEY uk_RH_USER_username (username),
@@ -156,10 +160,6 @@ CREATE TABLE RH_TASK (
  * Create relationships between RH_USER, RH_USERLOG, RH_TASK
  *
  */
-ALTER TABLE RH_USER 
-    ADD CONSTRAINT fk_RH_USER_last_activity_id_RH_USERLOG_id
-    FOREIGN KEY(last_activity_id)
-    REFERENCES RH_USERLOG (id);
 
 ALTER TABLE RH_USERLOG 
     ADD CONSTRAINT fk_RH_USERLOG_user_id_RH_USER_id

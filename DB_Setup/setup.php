@@ -12,11 +12,11 @@
  * @history
  *   09/01/2013: added DB creation, table creation and table info display
  *   09/10/2013: changed DB access from mysqli to PDO
- *
+ *   09/12/2013: cleaned up (removed unused code)
  *
  */
 
-include 'k0m3kt.php';
+include '../../inc/k0m3kt.php';
 
 // Create database, remove it first if it exists
 $sql = "DROP DATABASE IF EXISTS $database";
@@ -37,7 +37,7 @@ if(! $dbh->query($sql)){
 }
 
 // Create tables from the DB schema file
-$fh = fopen('rockhopper.sql', 'rb');
+$fh = fopen('../../inc/rockhopper.sql', 'rb');
 if($fh){
     while(! feof($fh)){
         $buffer = stream_get_line($fh, 1000000, ";\n");
@@ -49,9 +49,6 @@ if($fh){
 else {
     exit("can't opne sql file.");
 }
-
-
-// TODO: Insert default data into tables
 
 
 // Check tables
@@ -74,20 +71,10 @@ foreach($tables as $table){
     }
 }
 
-// Print out each table's data
-foreach($tables as $table){
-    $sql = "SELECT * FROM $table";
-    $result = $sth->fetchAll(PDO::FETCH_CLASS, "fruit");
-    
-    if($stmt = $dbh->query($sql)){
-        echo "Table $table:<br>";
-        echo "<table>";
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-            echo "<tr><td>" . $row ['Field'] . "</td><td>" . $row ['Type'] . "</td></tr>";
-        }
-        echo "</table><br>";
-    }
-}
+// TODO: Insert default data into tables
+
+// TODO: Print out each table's data
+
 
 // Close the connection
 $dbh = null;
