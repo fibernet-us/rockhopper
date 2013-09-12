@@ -5,7 +5,7 @@
  * 
  * @author   Wen Bian
  * @version  1.10
- * @lud      9/3/2013
+ * @lud      9/10/2013
  *
  * @notes
  * in some cases foreign keys are not 'cascade on delete', so as to preserve 
@@ -21,7 +21,6 @@
  * table RH_USER
  *
  * stores rockhopper related user info.
- * contain a link to bugzilla user id.
  * team list is stored in rhteam_member.
  *
  * == type ==
@@ -53,6 +52,7 @@ CREATE TABLE RH_USER (
   timezone          tinyint       NOT NULL  DEFAULT 0, 
   location          varchar(255)            DEFAULT NULL,
   iconurl           varchar(255)            DEFAULT NULL,
+  enabled           tinyint(1)    NOT NULL  DEFAULT 1,
 
   last_activity_id  int           NOT NULL,
 
