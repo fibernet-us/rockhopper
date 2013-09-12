@@ -69,18 +69,18 @@ class User {
     public function getLastActivityId()  { return $this->$last_activity_id; }
 
     // setters 
-    public function setDbHandle($dbh)     { $this->$dbh = $dbh;     }
-    public function setUsername($u)       { $this->update('u', $u); }
-    public function setFullname($f)       { $this->update('f', $f); }
-    public function setPassword($p)       { $this->update('p', $p); }
-    public function setEmail($e)          { $this->update('e', $e); }
-    public function setType($t)           { $this->update('t', $t); }
-    public function setStatus($s)         { $this->update('s', $s); }
-    public function setTimezone($z)       { $this->update('z', $z); }
-    public function setLocation($l)       { $this->update('l', $l); }
-    public function setIconUrl($i)        { $this->update('i', $i); }
-    public function setEnabled($b)        { $this->update('b', $b); }
-    public function setLastActivityId($a) { $this->update('a', $a); }   
+    public function setDbHandle($dbh)     { return $this->$dbh = $dbh;      }
+    public function setUsername($u)       { return $this->update('u', $u);  }
+    public function setFullname($f)       { return $this->update('f', $f);  }
+    public function setPassword($p)       { return $this->update('p', $p);  }
+    public function setEmail($e)          { return $this->update('e', $e);  }
+    public function setType($t)           { return $this->update('t', $t);  }
+    public function setStatus($s)         { return $this->update('s', $s);  }
+    public function setTimezone($z)       { return $this->update('z', $z);  }
+    public function setLocation($l)       { return $this->update('l', $l);  }
+    public function setIconUrl($i)        { return $this->update('i', $i);  }
+    public function setEnabled($b)        { return $this->update('b', $b);  }
+    public function setLastActivityId($a) { return $this->update('a', $a);  }   
     
     // Update a property given its name initial and new value
     private function update($property, $newValue) {
