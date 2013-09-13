@@ -40,10 +40,10 @@ echo '<body>';
  * public static functions
  * =======================
  * 
- * getUser($dbh, $username, $passwd) 
+ * getUser($dbh, $username, $password) 
  * getAllUsers($dbh)
- * addUser($dbh, $username, $fullname, $passwd, $email, $timezone) 
- * addUserFull($dbh, $username, $fullname, $passwd, $email, $timezone, $type, $status, $location, $iconurl) 
+ * addUser($dbh, $username, $fullname, $password, $email, $timezone) 
+ * addUserFull($dbh, $username, $fullname, $password, $email, $timezone, $type, $status, $location, $iconurl) 
  * removeUser($dbh, $username) 
  * removeAllUsers($dbh)
  * 
@@ -76,8 +76,8 @@ printUserTable();
 
 echo "<p><b>User 1 info:</b></p>";
 $username = 'user1';
-$passwd = 'pass1';
-$user = User::getUser($dbh, $username, $passwd);
+$password = 'pass1';
+$user = User::getUser($dbh, $username, $password);
 echo "<p>" . $user . "</p>";
 
 echo "<p><b>User 1 after full name and type change:</b></p>";

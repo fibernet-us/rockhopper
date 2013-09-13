@@ -1,5 +1,7 @@
 <?php
 
+include 'passcrypt.php';
+
 /**
  * ****************************************************************************
  *
@@ -21,7 +23,8 @@ class User {
     private $id;
     private $username;
     private $fullname;
-    private $passwd;
+    private $passhash;
+    private $salt;
     private $email;
     private $type;
     private $status;
@@ -65,7 +68,7 @@ class User {
     	return   "id=" . $this->id 
                . "; username=" . $this->username 
                . "; fullname=" . $this->fullname 
-               . "; passwd=" . $this->passwd 
+               . "; passhash=" . $this->passhash 
                . "; email=" . $this->email
                . "; type=" . $this->getTypeString()
                . "; status=" . $this->getStatusString()
@@ -75,11 +78,14 @@ class User {
                . "; enabled=" . $this->enabled;
     }
     
-    // getters 
+    
+    /**************************************************************************
+     * getters
+     *************************************************************************/
+    
     public function getId()              { return $this->id;               }
     public function getUsername()        { return $this->username;         }
     public function getFullname()        { return $this->fullname;         }
-    public function getPassword()        { return $this->passwd;           }
     public function getEmail()           { return $this->email;            }
     public function getType()            { return $this->type;             }
     public function getStatus()          { return $this->status;           }
@@ -113,11 +119,13 @@ class User {
     }
     
     
-    // setters 
+    /**************************************************************************
+     * setters
+     *************************************************************************/
+    
     public function setDbHandle($dbh)     { return $this->dbh = $dbh;      }
     public function setUsername($u)       { return $this->update('u', $u);  }
     public function setFullname($f)       { return $this->update('f', $f);  }
-    public function setPassword($p)       { return $this->update('p', $p);  }
     public function setEmail($e)          { return $this->update('e', $e);  }
     public function setType($t)           { return $this->update('t', $t);  }
     public function setStatus($s)         { return $this->update('s', $s);  }
@@ -126,84 +134,62 @@ class User {
     public function setIconUrl($i)        { return $this->update('i', $i);  }
     public function setEnabled($b)        { return $this->update('b', $b);  }
     //public function setLastActivityId($a) { return $this->update('a', $a);  }   
-    
-   
-    // Update a property given its name initial and new value
-    private function update($property, $newValue) {
-        // get property name
-        switch($property) {
-            //case 'a': $propertyName = 'last_activity_id'; 
-            //          $propertyref = &$this->last_activity_id;
-            //          break;
-            case 'b': $propertyName = 'enabled'; 
-                      $propertyref = &$this->enabled;
-                      break;            
-            case 'e': $propertyName = 'email';  
-                      $propertyref = &$this->email;
-                      break;   
-            case 'f': $propertyName = 'fullname';   
-                      $propertyref = &$this->fullname;
-                      break;  
-            case 'i': $propertyName = 'iconurl';   
-                      $propertyref = &$this->iconurl;
-                      break;  
-            case 'l': $propertyName = 'lacation';   
-                      $propertyref = &$this->lacation;
-                      break;          
-            case 'p': $propertyName = 'passwd';   
-                      $propertyref = &$this->passwd;
-                      $newValue = self::getPasshash($newValue);
-                      break;  
-            case 's': $propertyName = 'status';   
-                      $propertyref = &$this->status;
-                      break;  
-            case 't': $propertyName = 'type';   
-                      $propertyref = &$this->type;
-                      break;  
-            case 'u': $propertyName = 'username';   
-                      $propertyref = &$this->username;
-                      break;  
-            case 'z': $propertyName = 'timezone';   
-                      $propertyref = &$this->timezone;
-                      break;  
-            default: return FALSE;
-        }
-        
-        $sql = 'UPDATE ' . self::USER_TABLE 
-             . ' SET ' . $propertyName . ' = :newValue' 
-             . ' WHERE id = :id';
-        $stmt = $this->dbh->prepare($sql);
-        
-        // $stmt->execute() returns true on success
-        if($stmt->execute(array(':newValue' => $newValue, ':id' => $this->id))) {
-            $propertyref = $newValue;
-            return TRUE;
-        }
-        else {
-            return FALSE;
-        }
-    }
-    
 
     
-    ////////////////////////// static functions ///////////////////////////////
+    /** 
+     * Change password. Hash it with a sale and store both in DB
+     */
+    public function setPassword($password) {
+    	list($passhash, $salt) = self::getPassAndSalt($password);
+
+    	$sql = 'UPDATE ' . self::USER_TABLE
+    	     . ' SET passhash = :passhash, salt = :salt' 
+    		 . ' WHERE id = :id';
+    	$stmt = $this->dbh->prepare($sql);
+    	
+    	// $stmt->execute() returns true on success
+    	if($stmt->execute(array(':passhash' => $passhash, 
+    			                ':salt'     => $salt,
+    			                ':id'       => $this->id))) {
+    		return TRUE;
+    	}
+    	else {
+    		return FALSE;
+    	}    	
+    }
+ 
+    
+    
+    /**************************************************************************
+     * public static function section
+     *************************************************************************/
     
     
     /**
      * Return a user object given username and password
      */
-    public static function getUser($dbh, $username, $passwd) {
-    	$passhash = self::getPasshash($passwd);
+    public static function getUser($dbh, $username, $password) {
     	
         $sql = 'SELECT * FROM ' . self::USER_TABLE 
-             . ' WHERE username = :username AND passwd = :passwd';
+             . ' WHERE username = :username';
         
         $stmt = $dbh->prepare($sql);    
-        $stmt->execute(array(':username' => $username, ':passwd' => $passhash));
+        $stmt->execute(array(':username' => $username));
         
-        $user = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
-        $user[0]->setDbHandle($dbh);
-        return $user[0];
+        $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+        if(empty($users)) {
+        	return false;
+        }
+        
+        $passhash = $users[0]->getPasshash();
+        $salt = $users[0]->getSalt();
+        if(self::verifyPassword($password, $passhash, $salt)) {   
+            $users[0]->setDbHandle($dbh);
+            return $users[0];
+        }
+        else {
+        	return FALSE;
+        }
     }
 
     
@@ -224,14 +210,14 @@ class User {
     /**
      * Add a user given required attributes
      */
-    public static function addUser($dbh, $username, $fullname, $passwd, $email, $timezone) {
+    public static function addUser($dbh, $username, $fullname, $password, $email, $timezone) {
          
         $type = self::TYPE_UNKNOWN;
         $status = self::STATUS_UNKNOWN;
         $location = NULL;
         $iconurl = NULL;
         
-        return self::addUserFull($dbh, $username, $fullname, $passwd, $email, $timezone,
+        return self::addUserFull($dbh, $username, $fullname, $password, $email, $timezone,
                                    $type, $status, $location, $iconurl);
     }
     
@@ -239,22 +225,23 @@ class User {
     /**
      * Add a user given all attributes
      */
-    public static function addUserFull($dbh, $username, $fullname, $passwd, $email, $timezone,  
+    public static function addUserFull($dbh, $username, $fullname, $password, $email, $timezone,  
                                          $type, $status, $location, $iconurl) {
 
-    	$passhash = self::getPasshash($passwd);     
+    	list($passhash, $salt) = self::getPassAndSalt($password); 
     	   
         $sql = 'INSERT INTO ' . self::USER_TABLE
-             . ' (username, fullname, passwd, email, type, status, timezone, location, iconurl) '
+             . ' (username, fullname, passhash, salt, email, type, status, timezone, location, iconurl) '
              . ' VALUES '
-             . ' (:username, :fullname, :passwd, :email, :type, :status, :timezone, :location, :iconurl)';
+             . ' (:username, :fullname, :passhash, :salt, :email, :type, :status, :timezone, :location, :iconurl)';
         
         $stmt = $dbh->prepare($sql);
 
         // $stmt->execute() returns true on success
         return $stmt->execute(array(':username' => $username, 
                                     ':fullname' => $fullname,
-                                    ':passwd'   => $passhash,
+                                    ':passhash' => $passhash,
+        		                    ':salt'     => $salt,
                                     ':email'    => $email,
                                     ':type'     => $type,
                                     ':status'   => $status,
@@ -288,12 +275,82 @@ class User {
     	return $stmt->execute();
     }
     
-    // enscrypt passwd with SHA and salt
-    // TODO
-    private static function getPasshash($passwd) {
-    	// password_hash() available only after 5.5.0
-    	//return password_hash($passwd, PASSWORD_DEFAULT);
-    	return $passwd;
+    
+    
+    /**************************************************************************
+     * private function section
+     *************************************************************************/
+    
+    // Update a property given its name initial and new value
+    private function update($property, $newValue) {
+    	// get property name
+    	switch($property) {
+    		//case 'a': $propertyName = 'last_activity_id';
+    		//          $propertyref = &$this->last_activity_id;
+    		//          break;
+    		case 'b': $propertyName = 'enabled';
+    		$propertyref = &$this->enabled;
+    		break;
+    		case 'e': $propertyName = 'email';
+    		$propertyref = &$this->email;
+    		break;
+    		case 'f': $propertyName = 'fullname';
+    		$propertyref = &$this->fullname;
+    		break;
+    		case 'i': $propertyName = 'iconurl';
+    		$propertyref = &$this->iconurl;
+    		break;
+    		case 'l': $propertyName = 'lacation';
+    		$propertyref = &$this->lacation;
+    		break;
+    		case 's': $propertyName = 'status';
+    		$propertyref = &$this->status;
+    		break;
+    		case 't': $propertyName = 'type';
+    		$propertyref = &$this->type;
+    		break;
+    		case 'u': $propertyName = 'username';
+    		$propertyref = &$this->username;
+    		break;
+    		case 'z': $propertyName = 'timezone';
+    		$propertyref = &$this->timezone;
+    		break;
+    		default: return FALSE;
+    	}
+    
+    	$sql = 'UPDATE ' . self::USER_TABLE
+    	. ' SET ' . $propertyName . ' = :newValue'
+    			. ' WHERE id = :id';
+    	$stmt = $this->dbh->prepare($sql);
+    
+    	// $stmt->execute() returns true on success
+    	if($stmt->execute(array(':newValue' => $newValue, ':id' => $this->id))) {
+    		$propertyref = $newValue;
+    		return TRUE;
+    	}
+    	else {
+    		return FALSE;
+    	}
     }
     
-}
+    
+	// enscrype a given password with a random salt 
+	// and return both the hashed password and the salt
+    private static function getPassAndSalt($password) {
+    	// password_hash() available only after 5.5.0
+    	// return password_hash($password, PASSWORD_DEFAULT);
+    	return Passcrypt::hashPassword($password);  // Array($passhash, $salt)
+    }
+    
+    
+    // check if a plain password matches its hashed version
+    private static function verifyPassword($password, $passhash, $salt) {
+    	return Passcrypt::verifyPassword($password, $passhash, $salt);
+    }
+       
+
+    protected function getPasshash()      { return $this->passhash;  }
+    protected function getSalt()          { return $this->salt;      }
+    
+    
+} // class User
