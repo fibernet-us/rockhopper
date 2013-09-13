@@ -16,7 +16,9 @@ include 'passcrypt.php';
  *   09/09/2013: added static methods for add, remove, get, getAll user(s)         
  *   09/11/2013: changed DB access from mysqli to PDO
  *   09/12/2013: added removeAllUsers(). tested every function.
- *                              
+ *   09/13/2013: added password hashing.
+ *   09/13/2013: added methods for fast username/email availability check
+ *                               
  */
 class User {
 
@@ -35,6 +37,10 @@ class User {
     //private $last_activity_id;
     
     private $dbh;  // database connection handle (PDO)
+    
+    // for fast username availability check
+    private static $usernameList = array();
+    private static $emailList = array();
     
     const USER_TABLE = 'RH_USER';
     
@@ -164,6 +170,38 @@ class User {
      * public static function section
      *************************************************************************/
     
+
+    /**
+     * Fast check if a username is registered
+     */
+    public static function isUsernameRegistered($dbh, $username) {
+    	if(empty(self::$usernameList)) {
+    		$sql = 'SELECT username FROM ' . self::USER_TABLE;
+    		$stmt = $dbh->prepare($sql);
+    		$stmt->execute();
+    		self::$usernameList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    		//echo "<p><font color=red><b>query db for username list</b></font></p>";
+    	}
+    
+    	return in_array($username, self::$usernameList);
+    }
+    
+    
+    /**
+     * Fast check if an email is registered
+     */
+    public static function isEmailRegistered($dbh, $email) {
+    	if(empty(self::$emailList)) {
+    		$sql = 'SELECT email FROM ' . self::USER_TABLE;
+    		$stmt = $dbh->prepare($sql);
+    		$stmt->execute();
+    		self::$emailList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    		//echo "<p><font color=red><b>query db for email list</b></font></p>";
+    	}
+    
+    	return in_array($email, self::$emailList);
+    }
+    
     
     /**
      * Return a user object given username and password
@@ -274,8 +312,7 @@ class User {
     	// $stmt->execute() returns true on success
     	return $stmt->execute();
     }
-    
-    
+
     
     /**************************************************************************
      * private function section

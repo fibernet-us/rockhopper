@@ -23,6 +23,8 @@ echo '<body>';
  * getLocation()    
  * getIconUrl()     
  * getEnabled()  
+ * getTypeString() 
+ * getStatusString()
  * 
  * setDbHandle($dbh)   
  * setUsername($u)      
@@ -39,7 +41,8 @@ echo '<body>';
  * 
  * public static functions
  * =======================
- * 
+ * isUsernameRegistered($dbh, $username)
+ * isEmailRegistered($dbh, $email) 
  * getUser($dbh, $username, $password) 
  * getAllUsers($dbh)
  * addUser($dbh, $username, $fullname, $password, $email, $timezone) 
@@ -89,6 +92,43 @@ echo "<p>" . $user;
 echo "<p><b>User table after user2 removed:</b></p>";
 User::removeUser($dbh, 'user2');
 printUserTable();
+
+echo "<p><b>Check if username \"user1\" is registered:</b></p>";
+if(User::isUsernameRegistered($dbh, "user1"))
+	echo "<p>Yes</p>";
+else
+	echo "<p>No</p>";
+
+echo "<p><b>Check if username \"user2\" is registered:</b></p>";
+if(User::isUsernameRegistered($dbh, "user2"))
+	echo "<p>Yes</p>";
+else
+	echo "<p>No</p>";
+
+echo "<p><b>Check if username \"user3\" is registered:</b></p>";
+if(User::isUsernameRegistered($dbh, "user3"))
+	echo "<p>Yes</p>";
+else
+	echo "<p>No</p>";
+
+echo "<p><b>Add new user with username \"user3\":</b></p>";
+if(User::addUser($dbh, "user3", "user t", "pass9", "usert@mail.com", 0))
+	echo "<p>Successful</p>";
+else
+	echo "<p>Failed</p>";
+
+echo "<p><b>Check if email \"user1@mail.com\" is registered: </b></p>";
+if(User::isEmailRegistered($dbh, "user1@mail.com"))
+	echo "<p>Yes</p>";
+else
+	echo "<p>No</p>";
+
+echo "<p><b>Check if email \"user2@mail.com\" is registered: </b></p>";
+if(User::isEmailRegistered($dbh, "user2@mail.com"))
+	echo "<p>Yes</p>";
+else
+	echo "<p>No</p>";
+
 
 echo '</body>';
 echo '</html>';
