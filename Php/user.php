@@ -67,11 +67,11 @@ class User {
     
     /** magic set */
     public function  __set($name, $value) {
-    	$this->data[$name] = $value;
+        $this->data[$name] = $value;
     }
     
     public function __toString() {
-    	return   "id=" . $this->id 
+        return   "id=" . $this->id 
                . "; username=" . $this->username 
                . "; fullname=" . $this->fullname 
                . "; passhash=" . $this->passhash 
@@ -103,25 +103,25 @@ class User {
 
     /** return string for type */
     public function getTypeString () {
-    	switch($this->type) {
-    		case self::TYPE_UNKNOWN:       return "unknown";
-    		case self::TYPE_RH_ADMIN:      return "admin";
-    		case self::TYPE_PROJECT_OWNER: return "project owner";
-    		case self::TYPE_DEV:           return "developer";
-    		case self::TYPE_SCRUM_MASTER:  return "scrum master";
-    		case self::TYPE_CHICKEN:       return "chicken";
-    	}
+        switch($this->type) {
+            case self::TYPE_UNKNOWN:       return "unknown";
+            case self::TYPE_RH_ADMIN:      return "admin";
+            case self::TYPE_PROJECT_OWNER: return "project owner";
+            case self::TYPE_DEV:           return "developer";
+            case self::TYPE_SCRUM_MASTER:  return "scrum master";
+            case self::TYPE_CHICKEN:       return "chicken";
+        }
     }
     
     /** return string for staus */
     public function getStatusString () {
-    	switch($this->status) {
-    		case self::STATUS_UNKNOWN:   return "unknown";
-    		case self::STATUS_WORKING:   return "working";
-    		case self::STATUS_IDLE:      return "idle";
-    		case self::STATUS_ON_LEAVE:  return "on leave";
-    		case self::STATUS_LEFT:      return "left";
-    	}
+        switch($this->status) {
+            case self::STATUS_UNKNOWN:   return "unknown";
+            case self::STATUS_WORKING:   return "working";
+            case self::STATUS_IDLE:      return "idle";
+            case self::STATUS_ON_LEAVE:  return "on leave";
+            case self::STATUS_LEFT:      return "left";
+        }
     }
     
     
@@ -146,22 +146,22 @@ class User {
      * Change password. Hash it with a sale and store both in DB
      */
     public function setPassword($password) {
-    	list($passhash, $salt) = self::getPassAndSalt($password);
+        list($passhash, $salt) = self::getPassAndSalt($password);
 
-    	$sql = 'UPDATE ' . self::USER_TABLE
-    	     . ' SET passhash = :passhash, salt = :salt' 
-    		 . ' WHERE id = :id';
-    	$stmt = $this->dbh->prepare($sql);
-    	
-    	// $stmt->execute() returns true on success
-    	if($stmt->execute(array(':passhash' => $passhash, 
-    			                ':salt'     => $salt,
-    			                ':id'       => $this->id))) {
-    		return TRUE;
-    	}
-    	else {
-    		return FALSE;
-    	}    	
+        $sql = 'UPDATE ' . self::USER_TABLE
+             . ' SET passhash = :passhash, salt = :salt' 
+             . ' WHERE id = :id';
+        $stmt = $this->dbh->prepare($sql);
+        
+        // $stmt->execute() returns true on success
+        if($stmt->execute(array(':passhash' => $passhash, 
+                                ':salt'     => $salt,
+                                ':id'       => $this->id))) {
+            return TRUE;
+        }
+        else {
+            return FALSE;
+        }        
     }
  
     
@@ -175,15 +175,15 @@ class User {
      * Fast check if a username is registered
      */
     public static function isUsernameRegistered($dbh, $username) {
-    	if(empty(self::$usernameList)) {
-    		$sql = 'SELECT username FROM ' . self::USER_TABLE;
-    		$stmt = $dbh->prepare($sql);
-    		$stmt->execute();
-    		self::$usernameList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    		//echo "<p><font color=red><b>query db for username list</b></font></p>";
-    	}
+        if(empty(self::$usernameList)) {
+            $sql = 'SELECT username FROM ' . self::USER_TABLE;
+            $stmt = $dbh->prepare($sql);
+            $stmt->execute();
+            self::$usernameList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+            //echo "<p><font color=red><b>query db for username list</b></font></p>";
+        }
     
-    	return in_array($username, self::$usernameList);
+        return in_array($username, self::$usernameList);
     }
     
     
@@ -191,15 +191,15 @@ class User {
      * Fast check if an email is registered
      */
     public static function isEmailRegistered($dbh, $email) {
-    	if(empty(self::$emailList)) {
-    		$sql = 'SELECT email FROM ' . self::USER_TABLE;
-    		$stmt = $dbh->prepare($sql);
-    		$stmt->execute();
-    		self::$emailList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    		//echo "<p><font color=red><b>query db for email list</b></font></p>";
-    	}
+        if(empty(self::$emailList)) {
+            $sql = 'SELECT email FROM ' . self::USER_TABLE;
+            $stmt = $dbh->prepare($sql);
+            $stmt->execute();
+            self::$emailList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+            //echo "<p><font color=red><b>query db for email list</b></font></p>";
+        }
     
-    	return in_array($email, self::$emailList);
+        return in_array($email, self::$emailList);
     }
     
     
@@ -207,7 +207,7 @@ class User {
      * Return a user object given username and password
      */
     public static function getUser($dbh, $username, $password) {
-    	
+        
         $sql = 'SELECT * FROM ' . self::USER_TABLE 
              . ' WHERE username = :username';
         
@@ -216,7 +216,7 @@ class User {
         
         $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
         if(empty($users)) {
-        	return false;
+            return false;
         }
         
         $passhash = $users[0]->getPasshash();
@@ -226,7 +226,7 @@ class User {
             return $users[0];
         }
         else {
-        	return FALSE;
+            return FALSE;
         }
     }
 
@@ -252,8 +252,8 @@ class User {
                                    $type = self::TYPE_UNKNOWN, $status = self::STATUS_UNKNOWN,
                                    $location = NULL, $iconurl = NULL) {
 
-    	list($passhash, $salt) = self::getPassAndSalt($password); 
-    	   
+        list($passhash, $salt) = self::getPassAndSalt($password); 
+           
         $sql = 'INSERT INTO ' . self::USER_TABLE
              . ' (username, fullname, passhash, salt, email, type, status, timezone, location, iconurl) '
              . ' VALUES '
@@ -265,7 +265,7 @@ class User {
         return $stmt->execute(array(':username' => $username, 
                                     ':fullname' => $fullname,
                                     ':passhash' => $passhash,
-        		                    ':salt'     => $salt,
+                                    ':salt'     => $salt,
                                     ':email'    => $email,
                                     ':type'     => $type,
                                     ':status'   => $status,
@@ -292,11 +292,11 @@ class User {
      * TODO: require extra 
      */
     public static function removeAllUsers($dbh) {
-    	$sql = 'TRUNCATE TABLE ' . self::USER_TABLE;
-    	$stmt = $dbh->prepare($sql);
+        $sql = 'TRUNCATE TABLE ' . self::USER_TABLE;
+        $stmt = $dbh->prepare($sql);
     
-    	// $stmt->execute() returns true on success
-    	return $stmt->execute();
+        // $stmt->execute() returns true on success
+        return $stmt->execute();
     }
 
     
@@ -306,69 +306,69 @@ class User {
     
     // Update a property given its name initial and new value
     private function update($property, $newValue) {
-    	// get property name
-    	switch($property) {
-    		//case 'a': $propertyName = 'last_activity_id';
-    		//          $propertyref = &$this->last_activity_id;
-    		//          break;
-    		case 'b': $propertyName = 'enabled';
-    		$propertyref = &$this->enabled;
-    		break;
-    		case 'e': $propertyName = 'email';
-    		$propertyref = &$this->email;
-    		break;
-    		case 'f': $propertyName = 'fullname';
-    		$propertyref = &$this->fullname;
-    		break;
-    		case 'i': $propertyName = 'iconurl';
-    		$propertyref = &$this->iconurl;
-    		break;
-    		case 'l': $propertyName = 'lacation';
-    		$propertyref = &$this->lacation;
-    		break;
-    		case 's': $propertyName = 'status';
-    		$propertyref = &$this->status;
-    		break;
-    		case 't': $propertyName = 'type';
-    		$propertyref = &$this->type;
-    		break;
-    		case 'u': $propertyName = 'username';
-    		$propertyref = &$this->username;
-    		break;
-    		case 'z': $propertyName = 'timezone';
-    		$propertyref = &$this->timezone;
-    		break;
-    		default: return FALSE;
-    	}
+        // get property name
+        switch($property) {
+            //case 'a': $propertyName = 'last_activity_id';
+            //          $propertyref = &$this->last_activity_id;
+            //          break;
+            case 'b': $propertyName = 'enabled';
+                      $propertyref = &$this->enabled;
+                      break;
+            case 'e': $propertyName = 'email';
+                      $propertyref = &$this->email;
+                      break;
+            case 'f': $propertyName = 'fullname';
+                      $propertyref = &$this->fullname;
+                      break;
+            case 'i': $propertyName = 'iconurl';
+                      $propertyref = &$this->iconurl;
+                      break;
+            case 'l': $propertyName = 'lacation';
+                      $propertyref = &$this->lacation;
+                      break;
+            case 's': $propertyName = 'status';
+                      $propertyref = &$this->status;
+                      break;
+            case 't': $propertyName = 'type';
+                      $propertyref = &$this->type;
+                      break;
+            case 'u': $propertyName = 'username';
+                      $propertyref = &$this->username;
+                      break;
+            case 'z': $propertyName = 'timezone';
+                      $propertyref = &$this->timezone;
+                      break;
+            default: return FALSE;
+        }
     
-    	$sql = 'UPDATE ' . self::USER_TABLE
-    	. ' SET ' . $propertyName . ' = :newValue'
-    			. ' WHERE id = :id';
-    	$stmt = $this->dbh->prepare($sql);
+        $sql = 'UPDATE ' . self::USER_TABLE
+        . ' SET ' . $propertyName . ' = :newValue'
+                . ' WHERE id = :id';
+        $stmt = $this->dbh->prepare($sql);
     
-    	// $stmt->execute() returns true on success
-    	if($stmt->execute(array(':newValue' => $newValue, ':id' => $this->id))) {
-    		$propertyref = $newValue;
-    		return TRUE;
-    	}
-    	else {
-    		return FALSE;
-    	}
+        // $stmt->execute() returns true on success
+        if($stmt->execute(array(':newValue' => $newValue, ':id' => $this->id))) {
+            $propertyref = $newValue;
+            return TRUE;
+        }
+        else {
+            return FALSE;
+        }
     }
     
     
-	// enscrype a given password with a random salt 
-	// and return both the hashed password and the salt
+    // enscrype a given password with a random salt 
+    // and return both the hashed password and the salt
     private static function getPassAndSalt($password) {
-    	// password_hash() available only after 5.5.0
-    	// return password_hash($password, PASSWORD_DEFAULT);
-    	return Passcrypt::hashPassword($password);  // Array($passhash, $salt)
+        // password_hash() available only after 5.5.0
+        // return password_hash($password, PASSWORD_DEFAULT);
+        return Passcrypt::hashPassword($password);  // Array($passhash, $salt)
     }
     
     
     // check if a plain password matches its hashed version
     private static function verifyPassword($password, $passhash, $salt) {
-    	return Passcrypt::verifyPassword($password, $passhash, $salt);
+        return Passcrypt::verifyPassword($password, $passhash, $salt);
     }
        
 
