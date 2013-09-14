@@ -246,25 +246,11 @@ class User {
     
     
     /**
-     * Add a user given required attributes
+     * Add a user. username, fullname, password, email and timezon are required.
      */
-    public static function addUser($dbh, $username, $fullname, $password, $email, $timezone) {
-         
-        $type = self::TYPE_UNKNOWN;
-        $status = self::STATUS_UNKNOWN;
-        $location = NULL;
-        $iconurl = NULL;
-        
-        return self::addUserFull($dbh, $username, $fullname, $password, $email, $timezone,
-                                   $type, $status, $location, $iconurl);
-    }
-    
-    
-    /**
-     * Add a user given all attributes
-     */
-    public static function addUserFull($dbh, $username, $fullname, $password, $email, $timezone,  
-                                         $type, $status, $location, $iconurl) {
+    public static function addUser($dbh, $username, $fullname, $password, $email, $timezone,  
+                                   $type = self::TYPE_UNKNOWN, $status = self::STATUS_UNKNOWN,
+                                   $location = NULL, $iconurl = NULL) {
 
     	list($passhash, $salt) = self::getPassAndSalt($password); 
     	   
