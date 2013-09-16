@@ -1,3 +1,7 @@
+<?php
+include '../php/cookie.php';
+?>
+
 <!DOCTYPE html>
 
 <head>
@@ -16,7 +20,7 @@
       <div class="span12">
         <div class="header_block clearfix">
           <div class="logo_block clearfix">
-            <h1><a href="index.html">Rock<span class="logo_colour">hopper</span></a></h1>
+            <h1><a href="index.php">Rock<span class="logo_colour">hopper</span></a></h1>
           </div>
           
           <div class="navbar navbar_ clearfix">
@@ -42,6 +46,32 @@
         </div>
       </div>
       
+ 
+      <div class="span6">
+        <div class="discription">
+      
+       <?php
+       				if($_SESSION['msg']['login-err'])
+						{
+							echo '<div class="err">'.$_SESSION['msg']['login-err'].'</div>';
+							unset($_SESSION['msg']['login-err']);
+						}
+						
+						if($_SESSION['msg']['reg-err'])
+						{
+							echo '<div class="err">'.$_SESSION['msg']['reg-err'].'</div>';
+							unset($_SESSION['msg']['reg-err']);
+						}
+						
+						if($_SESSION['msg']['reg-success'])
+						{
+							echo '<div class="success">'.$_SESSION['msg']['reg-success'].'</div>';
+							unset($_SESSION['msg']['reg-success']);
+						}
+					?>
+			   </div>
+      </div>		
+      
       <div class="span6">
         <div class="modal-body modal-body_compact">
             <ul class="nav nav-tabs nav-tabs_compact">
@@ -50,28 +80,40 @@
             </ul>
         
             <div class="tab-content tab-content_compact">
-              <div class="tab-pane tab-pane_compact active in" id="login">
-                <form action="index.cgi" method="post">
-                  <p><input type="text" name="login" placeholder="Username or Email" class="input-xlarge"></p>
+              <div class="tab-pane tab-pane_compact active in"  id="login">
+                <form action="index.php#login" method="post">
+                
+				
+                  <p><input type="text" name="username" placeholder="Username or Email" class="input-xlarge"></p>
                   <p><input type="password" name="password" placeholder="Password" class="input-xlarge"></p>
                   <label class="checkbox"><input type="checkbox">Remember me</label>
-                  <button type="submit" class="btn pull-right">Login</button>
+                  <input type="submit" name="submit" value="Login" class="btn pull-right" />
                 </form>
+                 <div>
+               	 </div>
               </div>
           
               <div class="tab-pane tab-pane_compact fade" id="create_account">
-                <form class="form-horizontal" id="tab" method="post" action="index.cgi">
-	              <div class="control-group">
+                <form class="form-horizontal" id="tab" method="post" action="index.php#create_account">
+	                   
+						<div class="control-group">
 	                <label class="control-label">Name</label>
 	                <div class="controls">
-	                  <input type="text" name="user_name">
+	                  <input type="text" name="name">
+	                </div>
+                  </div>
+                  
+					<div class="control-group">
+	                <label class="control-label">Username</label>
+	                <div class="controls">
+	                  <input type="text" name="username">
 	                </div>
                   </div>
                   
                   <div class="control-group">
                     <label class="control-label">Email</label>
                     <div class="controls">
-                      <input type="text" name="user_email">
+                      <input type="text" name="email">
                     </div>
                   </div>
                   
@@ -88,15 +130,16 @@
                       <input type="password" name="cpwd">
                     </div>
                   </div>
-                  
-                  <button type="submit" class="btn pull-right">Create Account</button>
-                </form>
+                  <input type="submit" name="submit" value="Create Account" class="btn pull-right" />
+                                  </form>
+                                  
+                   
               </div>  
             </div>
             
         </div>
       </div>
-      
+                  
     </div>
   </div>
 </section>
@@ -111,6 +154,6 @@
   </div>
 </footer>
 </body>
-<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript" src="js/bootstrap.js"></script>
 </html>
