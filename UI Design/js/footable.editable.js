@@ -548,6 +548,10 @@
 							 
 							 if ($(this).find('button').length <= 0) {
 								 var data_type = $(ft.table).find('th').eq(index).attr('data-type');
+								 
+								 //如果该列可编辑
+								 if (data_type !== "uneditable") {
+								 
 								 if ($(this).find('div').length <=0)
 							         var value = $(this).text();
 							     else if (data_type === "progress") {
@@ -580,6 +584,7 @@
 							     else if (data_type === "progress") {
 								     $(this).append('<input type="number"  name="quantity" min="0" max="100" value="'+ value + '">');
 								 }
+							 }
 							 }
 						 });
 						 
