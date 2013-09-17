@@ -160,7 +160,7 @@ class User {
             return TRUE;
         }
         else {
-            return FALSE;
+            return false;
         }        
     }
  
@@ -226,7 +226,7 @@ class User {
             return $users[0];
         }
         else {
-            return FALSE;
+            return false;
         }
     }
 
@@ -254,7 +254,7 @@ class User {
             return $users[0];
         }
         else {
-            return FALSE;
+            return false;
         }
     }
 
@@ -366,7 +366,7 @@ class User {
             case 'z': $propertyName = 'timezone';
                       $propertyref = &$this->timezone;
                       break;
-            default: return FALSE;
+            default: return false;
         }
     
         $sql = 'UPDATE ' . self::USER_TABLE
@@ -380,7 +380,7 @@ class User {
             return TRUE;
         }
         else {
-            return FALSE;
+            return false;
         }
     }
     
