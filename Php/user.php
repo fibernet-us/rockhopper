@@ -232,6 +232,34 @@ class User {
 
     
     /**
+     * Return a user object given email and password
+     */
+    public static function getUserByEmail($dbh, $email, $password) {
+        
+        $sql = 'SELECT * FROM ' . self::USER_TABLE 
+             . ' WHERE email = :email';
+        
+        $stmt = $dbh->prepare($sql);    
+        $stmt->execute(array(':email' => $email));
+        
+        $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+        if(empty($users)) {
+            return false;
+        }
+        
+        $passhash = $users[0]->getPasshash();
+        $salt = $users[0]->getSalt();
+        if(self::verifyPassword($password, $passhash, $salt)) {   
+            $users[0]->setDbHandle($dbh);
+            return $users[0];
+        }
+        else {
+            return FALSE;
+        }
+    }
+
+    
+    /**
      * Get all users
      * @return numeric array of user
      */

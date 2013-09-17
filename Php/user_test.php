@@ -44,6 +44,7 @@ echo '<body>';
  * isUsernameRegistered($dbh, $username)
  * isEmailRegistered($dbh, $email) 
  * getUser($dbh, $username, $password) 
+ * getUserByEmail($dbh, $email, $password) 
  * getAllUsers($dbh)
  * addUser($dbh, $username, $fullname, $password, $email, $timezone, $type, $status, $location, $iconurl) 
  * removeUser($dbh, $username) 
@@ -76,10 +77,16 @@ User::addUser($dbh, "user2", "user two", "pass2", "user2@mail.com", 0);
 User::addUser($dbh, "user3", "user san", "pass3", "user3@mail.com", 8, 0, 0, "Beijing", "img/user3.jpg");
 printUserTable();
 
-echo "<p><b>User 1 info:</b></p>";
+echo "<p><b>Get 'user1' by username:</b></p>";
 $username = 'user1';
 $password = 'pass1';
 $user = User::getUser($dbh, $username, $password);
+echo "<p>" . $user . "</p>";
+
+echo "<p><b>Get 'user1' by email 'user1@mail.com':</b></p>";
+$email = 'user1@mail.com';
+$password = 'pass1';
+$user = User::getUserByEmail($dbh, $email, $password);
 echo "<p>" . $user . "</p>";
 
 echo "<p><b>User 1 after full name and type change:</b></p>";
