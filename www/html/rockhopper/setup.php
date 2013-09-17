@@ -13,10 +13,12 @@
  *   09/01/2013: added DB creation, table creation and table info display
  *   09/10/2013: changed DB access from mysqli to PDO
  *   09/12/2013: cleaned up (removed unused code)
+ *   09/16/2013: added user admin creation code
  *
  */
 
-include '../../inc/k0m3kt.php';
+require_once '../../inc/k0m3kt.php';
+require_once 'user.php';
 
 // Create database, remove it first if it exists
 $sql = "DROP DATABASE IF EXISTS $database";
@@ -47,9 +49,14 @@ if($fh){
     }
 } 
 else {
-    exit("can't opne sql file.");
+    exit("can't open sql file.");
 }
 
+// Add a default user admin
+if(User::addUser($dbh, 'admin', 'rockhopper admin', 'rockhopper', 'admin@gmail.com', 0, User::TYPE_RH_ADMIN)) {
+    echo "<font color=blue>A default admin account is created (username: admin, password: rockhopper)</font><br>";
+    echo "<font color=red>Click <a href=index.php target=_blank>here</a> to login and change the password and email.</font><br><br>";
+}
 
 // Check tables
 echo "The following tables have been created: <br><br>";
@@ -65,15 +72,13 @@ foreach($tables as $table){
         echo "Table $table:<br>";
         echo "<table>";
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-            echo "<tr><td>" . $row ['Field'] . "</td><td>" . $row ['Type'] . "</td></tr>";
+            echo "<tr><td width=200>" . $row ['Field'] . "</td><td>" . $row ['Type'] . "</td></tr>";
         }
         echo "</table><br>";
     }
 }
-
-// TODO: Insert default data into tables
-
-// TODO: Print out each table's data
+		
+// TODO: Print out each table's default/init data
 
 
 // Close the connection

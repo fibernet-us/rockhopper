@@ -1,6 +1,6 @@
 <?php
 
-include 'passcrypt.php';
+require_once 'passcrypt.php';
 
 /**
  * ****************************************************************************
@@ -74,7 +74,7 @@ class User {
         return   "id=" . $this->id 
                . "; username=" . $this->username 
                . "; fullname=" . $this->fullname 
-               . "; passhash=" . $this->passhash 
+               . "; passhash=" . substr($this->passhash, 20, 6) 
                . "; email=" . $this->email
                . "; type=" . $this->getTypeString()
                . "; status=" . $this->getStatusString()

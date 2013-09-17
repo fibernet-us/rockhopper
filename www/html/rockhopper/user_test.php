@@ -1,7 +1,7 @@
 <?php
 
-include '../../inc/k0m3kt.php';
-include 'user.php';
+require_once '../../inc/k0m3kt.php';
+require_once 'user.php';
 
 echo '<html>';
 echo '<body>';
@@ -64,9 +64,9 @@ function printUserTable() {
 echo "<p><b>User table in the begining:</b></p>";
 printUserTable();
 
-echo "<p><b>User table after truncation (should be empty):</b></p>";
-User::removeAllUsers($dbh);
-printUserTable();
+//echo "<p><b>User table after truncation (should be empty):</b></p>";
+//User::removeAllUsers($dbh);
+//printUserTable();
 
 echo "<p><b>User table after adding user 1:</b></p>";
 User::addUser($dbh, "user1", "user one", "pass1", "user1@mail.com", -6);

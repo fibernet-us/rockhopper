@@ -3,9 +3,9 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 
 
-include '../DB_Setup/k0m3kt.php';
-include '../php/user.php';
-//include 'test.php';
+require_once '../../inc/k0m3kt.php';
+require_once 'user.php';
+//require_once 'test.php';
 
 session_name('rhLogin');
 // Starting the session
@@ -45,7 +45,7 @@ if($_POST['submit']=='Login')
     
 	$sql = "USE rockhopper; ";
     $dbh->query($sql);
-    $sql2="SELECT username, passhash,salt FROM rh_user WHERE username='{$_POST['username']}'";
+    $sql2="SELECT username, passhash,salt FROM RH_USER WHERE username='{$_POST['username']}'";
     
      foreach ($dbh->query($sql2) as $row) {
      	$row['passhash'];

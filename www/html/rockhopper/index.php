@@ -1,5 +1,5 @@
 <?php
-include '../php/cookie.php';
+require_once 'cookie.php';
 ?>
 
 <!DOCTYPE html>
