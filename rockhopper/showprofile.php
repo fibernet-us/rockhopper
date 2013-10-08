@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<head>
+<title>Rockhopper Project Page</title>
+<meta name="description" content="a project management system for Scrum">
+<meta name="keywords" content="Rockhopper, Scrum, project management">
+<meta http-equiv="author" content="estel">
+<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link rel="stylesheet" href="css/validationEngine.jquery.css" type="text/css">
+<!--script type="text/javascript" src="js/jquery.min.js"></script-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
+<script src="http://demos.9lessons.info/ajaximageupload/scripts/jquery.form.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script type="text/javascript" src="js/jquery.validationEngine.js"></script>
+<script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
+  
+  
+  <!---------for the photo upload using------------->
+<script type="text/javascript" >
+ $(document).ready(function() { 
+					
+            $('#photoimg').live('change', function()			
+			{ 
+			$("#cropimage").ajaxForm({
+						target: '#idface'
+		}).submit();
+		 
+	
+			});
+        }); 
+
+$(document).ready(function(){
+    $("#profileForm").validationEngine();
+    $("#passwordForm").validationEngine();
+   });
+</script>
+  
+</head>
+
+<body>
+
+<?php
+require_once 'header.php';
+?>
+
+<section>
+  <div class="container">
+  
+    <div class="row">
+    <h4 style='text-align: left; margin-top: 40px;'>User's photo</h4>
+    
+      <div class="span6">
+          <form  class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label">Choose default</label>
+              <div class="controls">
+                <select name="user_face" onchange="document.images['idface'].src=options[selectedIndex].value;">
+                  <option value="img/photo.jpg">photo0</option>
+                  <option value="img/photo1.jpg">photo1</option>
+                  <option value="img/photo2.jpg">photo2</option>
+                  <option value="img/photo3.jpg">photo3</option>
+                </select>
+                
+              </div>
+            </div>
+          </form>
+          
+          <!--------------------
+          upload user's own photo. Please refer to:
+          http://www.9lessons.info/2011/08/ajax-image-upload-without-refreshing.html
+          ---------------------->
+          <form id="cropimage" method="post" enctype="multipart/form-data" action='imageajax.php'>Upload your image <input type="file" name="photoimg" id="photoimg" /><br/>
+          <div style='font-size:11px'>Max 256 KB JPG, PNG, GIF, JPEG and BMP</div>
+          </form>
+      </div>
+      
+      <div class="span4">
+            <div style="display:inline-block; text-align: center; margin-top:50px;" class="span1 img-polaroid"><img src="img/photo.jpg" id=idface></div>
+      </div>
+    
+    </div>
+      
+      
+    <div class="row">
+      <div class="span7">
+        <h4 style='text-align: left; margin-top: 30px;'>User's profile</h4>
+          <form class="form-horizontal" id="profileForm">
+            
+            <div class="control-group">
+              <label class="control-label">Username</label>
+              <div class="controls">
+                <input type="text" name="username" value="<?php echo $curUser->getUsername() ?>" class="input-xlarge" maxlength="20">
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label">Real Name</label>
+              <div class="controls">
+                <input type="text" name="name" value="<?php echo $curUser->getFullname() ?>" class="input-xlarge" maxlength="20">
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label">Email</label>
+              <div class="controls">
+                <input type="text" name="email" value="<?php echo $curUser->getEmail() ?>" class="input-xlarge validate[required,custom[email]] text-input" maxlength="40">
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label">Time Zone</label>
+              <div class="controls">
+              <select name="DropDownTimezone" id="DropDownTimezone" class="input-xlarge">
+              <option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
+              <option value="-11.0">(GMT -11:00) Midway Island, Samoa</option>
+              <option value="-10.0">(GMT -10:00) Hawaii</option>
+              <option value="-9.0">(GMT -9:00) Alaska</option>
+              <option selected="selected" value="-8.0">(GMT -8:00) Pacific Time (US & Canada)</option>
+              <option value="-7.0">(GMT -7:00) Mountain Time (US & Canada)</option>
+              <option value="-6.0">(GMT -6:00) Central Time (US & Canada), Mexico City</option>
+              <option value="-5.0">(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima</option>
+              <option value="-4.0">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+              <option value="-3.5">(GMT -3:30) Newfoundland</option>
+              <option value="-3.0">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+              <option value="-2.0">(GMT -2:00) Mid-Atlantic</option>
+              <option value="-1.0">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+              <option value="0.0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+              <option value="1.0">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+              <option value="2.0">(GMT +2:00) Kaliningrad, South Africa</option>
+              <option value="3.0">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+              <option value="3.5">(GMT +3:30) Tehran</option>
+              <option value="4.0">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+              <option value="4.5">(GMT +4:30) Kabul</option>
+              <option value="5.0">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+              <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+              <option value="5.75">(GMT +5:45) Kathmandu</option>
+              <option value="6.0">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+              <option value="7.0">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+              <option value="8.0">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+              <option value="9.0">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+              <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
+              <option value="10.0">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+              <option value="11.0">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+              <option value="12.0">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+        	  </select>
+              </div>
+            </div>
+            
+          	<div><button class="btn btn-primary pull-right">Update</button></div>
+        </form>
+        
+        
+      <h4 style='text-align: left; margin-top: 30px;'>Change password:</h4>
+          <form  class="form-horizontal" id="passwordForm">
+            
+            <div class="control-group">
+              <label class="control-label">Old Password</label>
+              <div class="controls">
+                <input type="password" value="" name="oldPassword" class="validate[required] input-xlarge" maxlength="20">
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label">New Password</label>
+              <div class="controls">
+                <input type="password" value="" name="newPassword" class="input-xlarge validate[required] text-input"  id="newPassword" maxlength="20">
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label">Repeat Password</label>
+              <div class="controls">
+                <input type="password" value="" name="newPassword" class="input-xlarge validate[required,equals[newPassword]] text-input" maxlength="20">
+              </div>
+            </div>
+            
+          	<div><button class="btn btn-primary pull-right">Update</button></div>
+        </form>
+      </div>
+
+</div>
+
+      
+      
+    </div>
+  </div>
+  
+</section>
+
+
+<footer> 
+</footer>
+</body>
+</html>

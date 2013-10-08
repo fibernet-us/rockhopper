@@ -53,6 +53,7 @@ CREATE TABLE RH_USER (
   fullname          varchar(255)  NOT NULL,
   passhash          varchar(255)  NOT NULL, 
   salt              char(21)      NOT NULL,
+  auth              varchar(255)  NOT NULL, 
   email             varchar(255)  NOT NULL,
   type              tinyint       NOT NULL  DEFAULT 0,  
   status            tinyint       NOT NULL  DEFAULT 0,  

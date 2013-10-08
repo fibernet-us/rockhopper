@@ -27,6 +27,7 @@ class User {
     private $fullname;
     private $passhash;
     private $salt;
+    private $auth;
     private $email;
     private $type;
     private $status;
@@ -36,7 +37,7 @@ class User {
     private $enabled;
     //private $last_activity_id;
     
-    private $dbh;  // database connection handle (PDO)
+    private $dbh;  // database connection handle(PDO)
     
     // for fast username availability check
     private static $usernameList = array();
@@ -92,6 +93,7 @@ class User {
     public function getId()              { return $this->id;               }
     public function getUsername()        { return $this->username;         }
     public function getFullname()        { return $this->fullname;         }
+    public function getAuth()            { return $this->auth;             }
     public function getEmail()           { return $this->email;            }
     public function getType()            { return $this->type;             }
     public function getStatus()          { return $this->status;           }
@@ -102,7 +104,7 @@ class User {
     //public function getLastActivityId()  { return $this->last_activity_id; }
 
     /** return string for type */
-    public function getTypeString () {
+    public function getTypeString() {
         switch($this->type) {
             case self::TYPE_UNKNOWN:       return "unknown";
             case self::TYPE_RH_ADMIN:      return "admin";
@@ -114,7 +116,7 @@ class User {
     }
     
     /** return string for staus */
-    public function getStatusString () {
+    public function getStatusString() {
         switch($this->status) {
             case self::STATUS_UNKNOWN:   return "unknown";
             case self::STATUS_WORKING:   return "working";
@@ -124,15 +126,50 @@ class User {
         }
     }
     
+    /** get a list of users this user can access */
+    public function getUsers() {
+        if($this->isAdmin() || $this->isProjectOwner()) {
+            $sql = 'SELECT * FROM ' . self::USER_TABLE;
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute();
+            
+            $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+            return $users;
+        }
+        else {
+            return array($this);
+        }
+    }
+    
+    /** return if this is of type ADMIN */
+    public function isAdmin() {
+        if($this->type == self::TYPE_RH_ADMIN) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /** return if this is of type TYPE_PROJECT_OWNER */
+    public function isProjectOwner() {
+        if($this->type == self::TYPE_PROJECT_OWNER) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     
     /**************************************************************************
      * setters
      *************************************************************************/
     
-    public function setDbHandle($dbh)     { return $this->dbh = $dbh;      }
+    public function setDbHandle($dbh)     { return $this->dbh = $dbh;       }
     public function setUsername($u)       { return $this->update('u', $u);  }
     public function setFullname($f)       { return $this->update('f', $f);  }
     public function setEmail($e)          { return $this->update('e', $e);  }
+    public function setAuth($a)           { return $this->update('a', $a);  }
     public function setType($t)           { return $this->update('t', $t);  }
     public function setStatus($s)         { return $this->update('s', $s);  }
     public function setTimezone($z)       { return $this->update('z', $z);  }
@@ -164,6 +201,7 @@ class User {
         }        
     }
  
+    
     
     
     /**************************************************************************
@@ -258,6 +296,48 @@ class User {
         }
     }
 
+    /**
+     * Return a user object given username stored in session
+     * TODO: add more security checks
+     */
+    public static function getUserByUsername($dbh, $username) {
+    
+        $sql = 'SELECT * FROM ' . self::USER_TABLE
+        . ' WHERE username = :username';
+    
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute(array(':username' => $username));
+    
+        $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+        if(empty($users)) {
+            return false;
+        }
+    
+        $users[0]->setDbHandle($dbh);
+        return $users[0];
+    }
+    
+    /**
+     * Return a user object given auth key stored in a cookie
+     * TODO: add more security checks
+     */
+    public static function getUserByAuth($dbh, $auth) {
+    
+        $sql = 'SELECT * FROM ' . self::USER_TABLE
+        . ' WHERE auth = :auth';
+    
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute(array(':auth' => $auth));
+    
+        $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+        if(empty($users)) {
+            return false;
+        }
+    
+        $users[0]->setDbHandle($dbh);
+        return $users[0];
+    }
+    
     
     /**
      * Get all users
@@ -281,11 +361,12 @@ class User {
                                    $location = NULL, $iconurl = NULL) {
 
         list($passhash, $salt) = self::getPassAndSalt($password); 
+        $auth = '0';
            
         $sql = 'INSERT INTO ' . self::USER_TABLE
-             . ' (username, fullname, passhash, salt, email, type, status, timezone, location, iconurl) '
+             . '(username, fullname, passhash, salt, auth, email, type, status, timezone, location, iconurl) '
              . ' VALUES '
-             . ' (:username, :fullname, :passhash, :salt, :email, :type, :status, :timezone, :location, :iconurl)';
+             . '(:username, :fullname, :passhash, :salt, :auth, :email, :type, :status, :timezone, :location, :iconurl)';
         
         $stmt = $dbh->prepare($sql);
 
@@ -294,6 +375,7 @@ class User {
                                     ':fullname' => $fullname,
                                     ':passhash' => $passhash,
                                     ':salt'     => $salt,
+        		                    ':auth'     => $auth,
                                     ':email'    => $email,
                                     ':type'     => $type,
                                     ':status'   => $status,
@@ -303,6 +385,17 @@ class User {
                                    ));        
     }
 
+    /**
+     * Unset a user auth key
+     */
+    public static function removeUserAuth($dbh, $username) {
+        $sql = 'UPDATE ' . self::USER_TABLE . ' SET auth = 0 WHERE username = :username';
+        $stmt = $dbh->prepare($sql);
+    
+        // $stmt->execute() returns true on success
+        return $stmt->execute(array(':username' => $username));
+    }
+    
     
     /**
      * Delete a user given username
@@ -339,6 +432,9 @@ class User {
             //case 'a': $propertyName = 'last_activity_id';
             //          $propertyref = &$this->last_activity_id;
             //          break;
+        	case 'a': $propertyName = 'auth';
+        	          $propertyref = &$this->auth;
+        	          break;
             case 'b': $propertyName = 'enabled';
                       $propertyref = &$this->enabled;
                       break;

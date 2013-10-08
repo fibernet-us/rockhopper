@@ -17,8 +17,10 @@
  *
  */
 
-require_once '../../inc/k0m3kt.php';
+require_once 'connect.php';
 require_once 'user.php';
+
+$dbfile = '../../inc/rockhopper.sql';
 
 // Create database, remove it first if it exists
 $sql = "DROP DATABASE IF EXISTS $database";
@@ -39,7 +41,7 @@ if(! $dbh->query($sql)){
 }
 
 // Create tables from the DB schema file
-$fh = fopen('../../inc/rockhopper.sql', 'rb');
+$fh = fopen($dbfile, 'rb');
 if($fh){
     while(! feof($fh)){
         $buffer = stream_get_line($fh, 1000000, ";\n");

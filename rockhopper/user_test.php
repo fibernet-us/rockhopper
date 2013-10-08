@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../inc/k0m3kt.php';
+require_once 'connect.php';
 require_once 'user.php';
 
 echo '<html>';

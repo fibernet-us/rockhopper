@@ -98,6 +98,14 @@ table input[type=date] {
   color: #635B53;
 }
 
+.errmessage {
+  margin-top: 10px;
+  font-size: 100%;
+  color: #DA256E;
+  line-height: 1em;
+  padding: 10px;
+}
+
 /*------ index ------- */
 #index_header{
   background-image: url("../img/header1.gif");
@@ -140,7 +148,7 @@ table input[type=date] {
 }
 
 #index_content .discription h2 {
-  font-size: 300%;
+  font-size: 220%;
   font-weight: bold;
   color: #6F97C9;
   border-bottom: 1px solid #6F97C9;
@@ -148,11 +156,12 @@ table input[type=date] {
 }
 
 #index_content .discription p {
-  font-size: 150%;
-  line-height: 1.5em;
+  font-size: 120%;
+  line-height: 2em;
   padding: 10px;
   border-bottom: 1px solid #6F97C9;
 }
+
 
 #index_content .tab-content_ .btn {
   padding: 0 18px;

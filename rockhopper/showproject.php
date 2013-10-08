@@ -5,15 +5,15 @@
 <meta name="description" content="a project management system for Scrum">
 <meta name="keywords" content="Rockhopper, Scrum, project management">
 <meta http-equiv="author" content="estel">
-<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
-<link rel="stylesheet" href="css/footable.core.css" type="text/css">
-<link rel="stylesheet" href="css/style.css" type="text/css">
-<link href="css/footable.editable-1.0.css" rel="stylesheet" type="text/css" >
+<link rel="stylesheet" href="../css/bootstrap.css" type="text/css">
+<link rel="stylesheet" href="../css/footable.core.css" type="text/css">
+<link rel="stylesheet" href="../css/style.css" type="text/css">
+<link href="../css/footable.editable-1.0.css" rel="stylesheet" type="text/css" >
 <!--script type="text/javascript" src="js/jquery.min.js"></script-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="js/bootstrap.js"></script>
-<script type="text/javascript" src="js/footable.js"></script>
-<script src="js/footable.editable.js" type="text/javascript"></script>
+<script type="text/javascript" src="../js/bootstrap.js"></script>
+<script type="text/javascript" src="../js/footable.js"></script>
+<script src="../js/footable.editable.js" type="text/javascript"></script>
 
   
   <script type="text/javascript">
@@ -25,41 +25,10 @@
 </head>
 
 <body>
-<header>
-             
-  <div class="container">
-          <div class="navbar navbar_ clearfix">
-            <div class="navbar-inner navbar-inner_">
-              <div class="container">
-                <a class="brand" href="#">Rockhopper</a>
-                
-                <div class="navbar-text user_profile">
-                  <img src="img/photo.jpg"><span class="left_padding">Estel Zhao</span>
-                  <a href="#" class="user_logout">Logout</a>
-                </div>
-                
-                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <div class="nav-collapse collapse pull-right">
-                <ul class="nav">
-                  <li><a href="#">Home</a></li>
-                  <li class="active"><a href="project_main.html">Projects</a></li>
-                  <li><a href="#">Sprints</a></li>
-                  <li><a href="#">Backlog</a></li>
-                  <li><a href="#">Teams</a></li>
-                  <li><a href="user.html">Users</a></li>
-                  <li><a href="#">Settings</a></li>
-                </ul>
-                </div>
-                
-              </div> 
-            </div>
-          </div>
-  </div>
-</header>
+
+<?php
+require_once 'header.php';
+?>
 
 <section id="project_content">
   <div class="container">
@@ -103,7 +72,7 @@
               <td>600</td>
               <td>
                 <div class="user_profile">
-                  <!--<img src="img/photo2.jpg"><span class="left_padding">Hao Wu</span>-->
+                  <!--<img src="img/photo2.jpg"> Hao Wu-->
                   Hao Wu
                 </div>
               </td>
@@ -214,7 +183,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <td><button class="btn" type="button" value="Add"><i class="icon-plus-sign"></i><span class="left_padding">New</button></td>
+              <td><button class="btn" type="button" value="Add"><i class="icon-plus-sign"></i> New</button></td>
               <!-------- 为了平衡分页符居中 ------------->
               <td colspan="8">
                 <div class="pagination pagination-centered"></div>
