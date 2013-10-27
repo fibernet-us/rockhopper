@@ -1,3 +1,21 @@
+<!---?php
+require_once 'user.php';
+
+function changePW ($dbh, $oldpw, $newpw) {
+	if 
+}
+
+if($_POST['submit'] == 'Change Password') {
+    if($_POST['oldPassword'] && $_POST['newPassword']) {
+        $_POST['oldPassword'] = safe_var($_POST['oldPassword']);
+        $_POST['newPassword'] = safe_var($_POST['newPassword']);
+        changePW($dbh, $_POST['oldPassword'], $_POST['newPassword']);
+	}
+}
+
+?----->
+
+
 <!DOCTYPE html>
 
 <head>
@@ -175,7 +193,7 @@ require_once 'header.php';
               </div>
             </div>
             
-          	<div><button class="btn btn-primary pull-right">Update</button></div>
+          	<div><button type="submit" name="submit" value="Change Password" class="btn btn-primary pull-right">Update</button></div>
         </form>
       </div>
 

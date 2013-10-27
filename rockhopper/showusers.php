@@ -57,7 +57,6 @@ require_once 'header.php';
                 if($users) {
                     foreach($users as $user) {
                         echo "<tr>"; 
-                        echo "<td>" . $user->getId() . "</td>";
                         echo "<td>" . $user->getUsername() . "</td>";
                         echo "<td>" . $user->getFullname() . "</td>";
                         echo "<td>" . $user->getEmail() . "</td>";
@@ -74,7 +73,7 @@ require_once 'header.php';
             <tr>
               <td><button class="btn" type="button" value="Add"><i class="icon-plus-sign"></i><span class="left_padding">New</button></td>
               <!-------- 为了平衡分页符居中 ------------->
-              <td colspan="6">
+              <td colspan="7">
                 <div class="pagination pagination-centered"></div>
               </td>
               <!-------- 为了平衡分页符居中 --------------->
