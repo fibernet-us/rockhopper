@@ -1,17 +1,13 @@
 ﻿/*!
- * FooTable Editable Plugin - Awesome Responsive FooTables That Are Editable
- * Version : 0.1
- * Author: Jake Drew - http://www.jakemdrew.com
+ * This plugin is designed to edit footable
+ * Author: Estel Zhao
+ * It is rewrite from
+ * FooTable Editable Plugin Version : 0.1 (Author: Jake Drew - http://www.jakemdrew.com)
+ * FooTable Editable Copyright 2013 Jake Drew
+ * Released under the MIT license
  *
  * Requires jQuery - http://jquery.com/
  * Requires FooTable http://themergency.com/footable
- *
- * FooTable Editable Copyright 2013 Jake Drew
- *
- * Released under the MIT license
- * You are free to use FooTable Editable in commercial projects as long as this copyright header is left intact.
- *
- * Date: 2 Jul 2013
  */
 
 (function ($, w, undefined) {
@@ -499,6 +495,7 @@
 						var buttons = getButtonIndexes(ft.table);
 						//找到新建行
 						var newRow = $(ft.table).find('tr.fooNewRow');
+						addCssToRow(newRow);
 						addButtonsToRow(newRow, buttons);
 							
 						 
@@ -534,10 +531,11 @@
                     });
 					
 					
-                    $(ft.table).on('click', '.icon-pencil', function (e) {
+                    $(ft.table).on('click', 'button[value="Edit"]', function (e) {
 						var curRow = $(this).closest('tr');
 						var oldValue = new Array();
-						 
+						
+						 addCssToRow(curRow);
 						 
 						 $.data(w.footable, tId + '_oldRowValue', oldValue);
 						 
@@ -594,7 +592,8 @@
                     });
 
                     
-					$(ft.table).on('click', '.icon-trash', function (e) {
+					$(ft.table).on('click', 'button[value="Delete"]', function (e) {
+						
 						var curRow = $(this).closest('tr');
 						
 						addCssToRow(curRow);
@@ -605,6 +604,7 @@
 					
 					$(ft.table).on('click', 'button[value="Ok"]', function (e) {
 						var curRow = $(this).closest('tr');
+						deleteCssToRow(curRow);
 						
 						//确定删除行
 						if ($(curRow).hasClass('fooDeleteRow')) {
@@ -653,10 +653,12 @@
 					
 					$(ft.table).on('click', 'button[value="Cancel"]', function (e) {
 						var curRow = $(this).closest('tr');
+						deleteCssToRow(curRow);
 						
 						//取消行新建
 						if ($(curRow).hasClass('fooNewRow')) {
-							processCommand(e.target, 'Delete');
+							alert("New content is deleted.");
+							deleteRow(curRow);
 						}
 						
 						//取消行修改
@@ -672,7 +674,6 @@
 						
 						//取消行删除
 						else if ($(curRow).hasClass('fooDeleteRow')) {
-							deleteCssToRow(curRow);
 							$(curRow).removeClass('fooDeleteRow');
 							switchButtons(e.target);
 						}
