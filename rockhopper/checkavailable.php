@@ -1,7 +1,14 @@
 <?php
 
- //mysql_connect("localhost","rockhopper","");
- //mysql_select_db("rockhopper");
+/**
+ * ****************************************************************************
+ *
+ * checkavailable.php 
+ * 
+ * Used by index.php to check whether a username or email has been taken.
+ * 
+ *                               
+ */
  
  require_once 'connect.php';
  require_once 'user.php';

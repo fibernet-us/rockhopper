@@ -44,6 +44,8 @@ class User {
     private static $emailList = array();
     
     const USER_TABLE = 'RH_USER';
+	const ICON_PATH = 'usericons/';
+	const DEFAULT_ICON = 'usericons/photo.jpg';
     
     const TYPE_UNKNOWN        = 0;
     const TYPE_RH_ADMIN       = 1;
@@ -160,6 +162,8 @@ class User {
             return false;
         }
     }
+	
+	
     
     /**************************************************************************
      * setters
@@ -176,11 +180,11 @@ class User {
     public function setLocation($l)       { return $this->update('l', $l);  }
     public function setIconUrl($i)        { return $this->update('i', $i);  }
     public function setEnabled($b)        { return $this->update('b', $b);  }
-    //public function setLastActivityId($a) { return $this->update('a', $a);  }   
-
+    //public function setLastActivityId($a) { return $this->update('a', $a);  }  
     
+	
     /** 
-     * Change password. Hash it with a sale and store both in DB
+     * Set password. Hash it with a sale and store both in DB
      */
     public function setPassword($password) {
         list($passhash, $salt) = self::getPassAndSalt($password);
@@ -188,6 +192,7 @@ class User {
         $sql = 'UPDATE ' . self::USER_TABLE
              . ' SET passhash = :passhash, salt = :salt' 
              . ' WHERE id = :id';
+			 		 
         $stmt = $this->dbh->prepare($sql);
         
         // $stmt->execute() returns true on success
@@ -200,21 +205,39 @@ class User {
             return false;
         }        
     }
- 
     
-    
-    
+    	 
+	 /**
+	 * Change password.
+     */
+	public function changePassword($dbh, $oldpwd, $newpwd) {
+        $passhash = $this->getPasshash();
+        $salt = $this->getSalt();
+
+        if(self::verifyPassword($oldpwd, $passhash, $salt)) {
+			//$debug = new PHPDebug(); 	
+			//$debug->debug($user);   
+			$this->setPassword($newpwd); 
+			return true;
+		}
+
+        else {
+            return false;
+        } 
+	}
+	
     /**************************************************************************
      * public static function section
      *************************************************************************/
-    
 
     /**
      * Fast check if a username is registered
      */
     public static function isUsernameRegistered($dbh, $username) {
         if(empty(self::$usernameList)) {
+	
             $sql = 'SELECT username FROM ' . self::USER_TABLE;
+		
             $stmt = $dbh->prepare($sql);
             $stmt->execute();
             self::$usernameList = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
@@ -358,7 +381,7 @@ class User {
      */
     public static function addUser($dbh, $username, $fullname, $password, $email, $timezone,  
                                    $type = self::TYPE_UNKNOWN, $status = self::STATUS_UNKNOWN,
-                                   $location = NULL, $iconurl = NULL) {
+                                   $location = NULL, $iconurl = self::DEFAULT_ICON) {
 
         list($passhash, $salt) = self::getPassAndSalt($password); 
         $auth = '0';

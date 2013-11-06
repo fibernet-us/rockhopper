@@ -1,20 +1,41 @@
-<!---?php
-require_once 'user.php';
+<?php
+require_once 'tracking.php';
+$debug = new PHPDebug();
+$debug->debug("Running PHPDebug to output to browser console");
+     
+$curUser = doAutoLogin($dbh);
 
-function changePW ($dbh, $oldpw, $newpw) {
-	if 
-}
+// update user's profile 
+if($_POST['submit'] == 'Update Profile') {
 
-if($_POST['submit'] == 'Change Password') {
-    if($_POST['oldPassword'] && $_POST['newPassword']) {
-        $_POST['oldPassword'] = safe_var($_POST['oldPassword']);
-        $_POST['newPassword'] = safe_var($_POST['newPassword']);
-        changePW($dbh, $_POST['oldPassword'], $_POST['newPassword']);
+    if($_POST['fullname'] && $_POST['email'] && $_POST['timezone']) {
+        $_POST['fullname'] = safe_var($_POST['fullname']);
+        $_POST['email'] = safe_var($_POST['email']);
+		$curUser->setFullname($_POST['fullname']);
+		$curUser->setEmail($_POST['email']);
+		$curUser->setTimezone($_POST['timezone']);
+        $_SESSION['msg']['updateprofile-success'] = 'Your profile is updated!';
+					
 	}
 }
 
-?----->
+// change user's password
+if($_POST['submit'] == 'Change Password') {
 
+    if($_POST['oldpwd'] && $_POST['newpwd'] && $_POST['newcpwd']) {
+        $_POST['oldpwd'] = safe_var($_POST['oldpwd']);
+        $_POST['newpwd'] = safe_var($_POST['newpwd']);
+		
+		$changeResult = $curUser->changePassword($dbh, $_POST['oldpwd'], $_POST['newpwd']);
+        if ($changeResult==false)
+			$_SESSION['msg']['changepwd-err'] = 'Please input the correct password.';
+		else
+			$_SESSION['msg']['changepwd-success'] = 'Password is changed!';
+					
+	}
+}
+
+?>
 
 <!DOCTYPE html>
 
@@ -32,104 +53,88 @@ if($_POST['submit'] == 'Change Password') {
 <script type="text/javascript" src="js/bootstrap.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
-  
-  
-  <!---------for the photo upload using------------->
-<script type="text/javascript" >
- $(document).ready(function() { 
-					
-            $('#photoimg').live('change', function()			
-			{ 
-			$("#cropimage").ajaxForm({
-						target: '#idface'
-		}).submit();
-		 
-	
-			});
-        }); 
 
+<!---------for the photo upload using------------->
+<script type="text/javascript" >
+
+//upload user's icon dynamically
+ $(document).ready(function() {
+	 $('#photoimg').live('change', function() {
+		 $("#preview").html('');
+		 $("#preview").html('<img src="img/loader.gif" alt="Uploading...."/>');
+		 $("#imageform").ajaxForm({
+			 target: '#preview',
+		 }).submit();
+	 });
+ }); 
+
+
+//register forms that need to be input-validated
 $(document).ready(function(){
     $("#profileForm").validationEngine();
     $("#passwordForm").validationEngine();
    });
 </script>
-  
 </head>
 
 <body>
-
 <?php
 require_once 'header.php';
 ?>
-
 <section>
-  <div class="container">
-  
-    <div class="row">
-    <h4 style='text-align: left; margin-top: 40px;'>User's photo</h4>
+<div class="container">
+  <div class="row">
+    <div class="span6">
     
-      <div class="span6">
-          <form  class="form-horizontal">
-            <div class="control-group">
-              <label class="control-label">Choose default</label>
-              <div class="controls">
-                <select name="user_face" onchange="document.images['idface'].src=options[selectedIndex].value;">
-                  <option value="img/photo.jpg">photo0</option>
-                  <option value="img/photo1.jpg">photo1</option>
-                  <option value="img/photo2.jpg">photo2</option>
-                  <option value="img/photo3.jpg">photo3</option>
-                </select>
-                
-              </div>
-            </div>
-          </form>
-          
-          <!--------------------
-          upload user's own photo. Please refer to:
-          http://www.9lessons.info/2011/08/ajax-image-upload-without-refreshing.html
-          ---------------------->
-          <form id="cropimage" method="post" enctype="multipart/form-data" action='imageajax.php'>Upload your image <input type="file" name="photoimg" id="photoimg" /><br/>
-          <div style='font-size:11px'>Max 256 KB JPG, PNG, GIF, JPEG and BMP</div>
-          </form>
-      </div>
+    
+      <h4 style='text-align: left; margin-top: 40px;'><?php echo $curUser->getUsername() ?>'s photo</h4>
+      <!--------------------------------
+      <form  class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label">Choose default</label>
+          <div class="controls">
+            <select name="user_face" onchange="document.images['idface'].src=options[selectedIndex].value;">
+              <option value="img/photo.jpg">photo0</option>
+              <option value="img/photo1.jpg">photo1</option>
+              <option value="img/photo2.jpg">photo2</option>
+              <option value="img/photo3.jpg">photo3</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      ------------------------------------->
       
-      <div class="span4">
-            <div style="display:inline-block; text-align: center; margin-top:50px;" class="span1 img-polaroid"><img src="img/photo.jpg" id=idface></div>
-      </div>
-    
+      <form id="imageform" method="post" enctype="multipart/form-data" action='uploadicon.php'>
+        Upload your image
+        <input type="file" name="photoimg" id="photoimg" />
+        <br/>
+        <div style='font-size:11px'>Max 256 KB JPG, PNG, GIF, JPEG and BMP</div>
+      </form>
+      <div class="span1 img-polaroid" id="preview" style="width:60px; height:60px;"><img src="<?php echo $curUser->getIconUrl() ?>" id="idface"></div>
     </div>
+  </div>
       
       
-    <div class="row">
-      <div class="span7">
-        <h4 style='text-align: left; margin-top: 30px;'>User's profile</h4>
-          <form class="form-horizontal" id="profileForm">
-            
-            <div class="control-group">
-              <label class="control-label">Username</label>
-              <div class="controls">
-                <input type="text" name="username" value="<?php echo $curUser->getUsername() ?>" class="input-xlarge" maxlength="20">
-              </div>
-            </div>
-            
-            <div class="control-group">
-              <label class="control-label">Real Name</label>
-              <div class="controls">
-                <input type="text" name="name" value="<?php echo $curUser->getFullname() ?>" class="input-xlarge" maxlength="20">
-              </div>
-            </div>
-            
-            <div class="control-group">
-              <label class="control-label">Email</label>
-              <div class="controls">
-                <input type="text" name="email" value="<?php echo $curUser->getEmail() ?>" class="input-xlarge validate[required,custom[email]] text-input" maxlength="40">
-              </div>
-            </div>
-            
-            <div class="control-group">
-              <label class="control-label">Time Zone</label>
-              <div class="controls">
-              <select name="DropDownTimezone" id="DropDownTimezone" class="input-xlarge">
+  <div class="row">
+    <div class="span6">
+      <h4 style='text-align: left; margin-top: 30px;'><?php echo $curUser->getUsername() ?>'s profile</h4>
+      <form class="form-horizontal" id="profileForm" method="post" action="showprofile.php">
+        <div class="control-group">
+          <label class="control-label">Real Name</label>
+          <div class="controls">
+            <input type="text" name="fullname" value="<?php echo $curUser->getFullname() ?>" class="input-xlarge" maxlength="20">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Email</label>
+          <div class="controls">
+            <input type="text" name="email" value="<?php echo $curUser->getEmail() ?>" class="input-xlarge validate[required,custom[email]] text-input" maxlength="40">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Time Zone</label>
+          <div class="controls">
+            <select name="timezone" id="DropDownTimezone" class="input-xlarge">
               <option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
               <option value="-11.0">(GMT -11:00) Midway Island, Samoa</option>
               <option value="-10.0">(GMT -10:00) Hawaii</option>
@@ -139,7 +144,6 @@ require_once 'header.php';
               <option value="-6.0">(GMT -6:00) Central Time (US & Canada), Mexico City</option>
               <option value="-5.0">(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima</option>
               <option value="-4.0">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
-              <option value="-3.5">(GMT -3:30) Newfoundland</option>
               <option value="-3.0">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
               <option value="-2.0">(GMT -2:00) Mid-Atlantic</option>
               <option value="-1.0">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
@@ -147,67 +151,76 @@ require_once 'header.php';
               <option value="1.0">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
               <option value="2.0">(GMT +2:00) Kaliningrad, South Africa</option>
               <option value="3.0">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-              <option value="3.5">(GMT +3:30) Tehran</option>
               <option value="4.0">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-              <option value="4.5">(GMT +4:30) Kabul</option>
               <option value="5.0">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-              <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
-              <option value="5.75">(GMT +5:45) Kathmandu</option>
               <option value="6.0">(GMT +6:00) Almaty, Dhaka, Colombo</option>
               <option value="7.0">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
               <option value="8.0">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
               <option value="9.0">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-              <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
               <option value="10.0">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
               <option value="11.0">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
               <option value="12.0">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
-        	  </select>
-              </div>
-            </div>
-            
-          	<div><button class="btn btn-primary pull-right">Update</button></div>
-        </form>
-        
-        
-      <h4 style='text-align: left; margin-top: 30px;'>Change password:</h4>
-          <form  class="form-horizontal" id="passwordForm">
-            
-            <div class="control-group">
-              <label class="control-label">Old Password</label>
-              <div class="controls">
-                <input type="password" value="" name="oldPassword" class="validate[required] input-xlarge" maxlength="20">
-              </div>
-            </div>
-            
-            <div class="control-group">
-              <label class="control-label">New Password</label>
-              <div class="controls">
-                <input type="password" value="" name="newPassword" class="input-xlarge validate[required] text-input"  id="newPassword" maxlength="20">
-              </div>
-            </div>
-            
-            <div class="control-group">
-              <label class="control-label">Repeat Password</label>
-              <div class="controls">
-                <input type="password" value="" name="newPassword" class="input-xlarge validate[required,equals[newPassword]] text-input" maxlength="20">
-              </div>
-            </div>
-            
-          	<div><button type="submit" name="submit" value="Change Password" class="btn btn-primary pull-right">Update</button></div>
-        </form>
-      </div>
-
-</div>
-
+            </select>
+          </div>
+        </div>
+        <div>
+          <button type="submit" name="submit" value="Update Profile" class="btn btn-primary pull-right">Update</button>
+        </div>
+      </form>
       
+      
+      <h4 style='text-align: left; margin-top: 30px;'>Change password:</h4>
+      <form  class="form-horizontal" id="passwordForm" method="post" action="showprofile.php">
+        <div class="control-group">
+          <label class="control-label">Old Password</label>
+          <div class="controls">
+            <input type="password" value="" name="oldpwd" class="validate[required] input-xlarge" maxlength="20">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">New Password</label>
+          <div class="controls">
+            <input type="password" value="" name="newpwd" class="input-xlarge validate[required] text-input"  id="newPassword" maxlength="20">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Repeat Password</label>
+          <div class="controls">
+            <input type="password" value="" name="newcpwd" class="input-xlarge validate[required,equals[newPassword]] text-input" maxlength="20">
+          </div>
+        </div>
+        <div>
+          <button type="submit" name="submit" value="Change Password" class="btn btn-primary pull-right">Change Password</button>
+        </div>
+      </form>
+    </duv>
+    
+    <div  class="span6">  
+      <div class="errmessage">
+        <?php
+              
+                if($_SESSION['msg']['changepwd-success']) {
+                    echo $_SESSION['msg']['changepwd-success'];
+                    unset($_SESSION['msg']['changepwd-success']);
+                }
+                 
+                if($_SESSION['msg']['changepwd-err']) {
+                    echo $_SESSION['msg']['changepwd-err'];
+                    unset($_SESSION['msg']['changepwd-err']);
+                }
+                 
+                if($_SESSION['msg']['updateprofile-success']) {
+                    echo $_SESSION['msg']['updateprofile-success'];
+                    unset($_SESSION['msg']['updateprofile-success']);
+                }
+                
+              ?>
+      </div>
       
     </div>
   </div>
-  
+</div>
 </section>
-
-
-<footer> 
-</footer>
+<footer> </footer>
 </body>
 </html>

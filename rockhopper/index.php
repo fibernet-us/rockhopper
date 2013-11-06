@@ -1,8 +1,10 @@
 
 <?php
+
 require_once 'tracking.php';
 
 if($_POST['submit'] == 'Login') {
+	var_dump($_POST);
     if($_POST['login'] && $_POST['password']) {
         $_POST['login'] = safe_var($_POST['login']);
         $_POST['password'] = safe_var($_POST['password']);
@@ -38,17 +40,18 @@ else if($_POST['submit'] == 'Create Account') {
 <script type="text/javascript" src="js/bootstrap.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function(){
     $("#tab").validationEngine();
     $("#loginForm").validationEngine();
-   });
+});
 
 function showErrMessage(message) {
 	$("#errMessage").append("<div  class=\"errmessage\">" + message + "</div>");
 }
 
- function check_username(value) {
+function check_username(value) {
 	$("#user_message").html(" checking...").css("color","red");
 	if (value == "") return false;
 
@@ -66,7 +69,6 @@ function showErrMessage(message) {
 		}
 	});
 }
-
 
 function check_email(value) {
 	$("#email_message").html(" checking...").css("color","red");

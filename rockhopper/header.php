@@ -33,7 +33,7 @@
         echo "<li class=\"dropdown pull-right navbar-text user_profile\">";
         echo "<img src=\"" . $curUser->getIconUrl() . "\">";
         echo "<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" style=\"color: #e7e5e5\">";
-        echo $curUser->getUsername();
+        echo " ".$curUser->getUsername();
         echo "<span class=\"caret\"></span></a>";
       
         echo "<ul class=\"dropdown-menu\">";
