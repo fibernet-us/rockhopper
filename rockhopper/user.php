@@ -33,7 +33,7 @@ class User {
     private $status;
     private $timezone;
     private $location;
-    private $iconurl;
+    private $icon_url;
     private $enabled;
     //private $last_activity_id;
     
@@ -83,7 +83,7 @@ class User {
                . "; status=" . $this->getStatusString()
                . "; timezone=" . $this->timezone
                . "; location=" . $this->location
-               . "; iconurl=" . $this->iconurl
+               . "; icon_url=" . $this->icon_url
                . "; enabled=" . $this->enabled;
     }
     
@@ -101,7 +101,7 @@ class User {
     public function getStatus()          { return $this->status;           }
     public function getTimezone()        { return $this->timezone;         }
     public function getLocation()        { return $this->location;         }
-    public function getIconUrl()         { return $this->iconurl;          }
+    public function getIconUrl()         { return $this->icon_url;          }
     public function getEnabled()         { return $this->enabled;          }
     //public function getLastActivityId()  { return $this->last_activity_id; }
 
@@ -291,6 +291,26 @@ class User {
         }
     }
 
+    /**
+     * Return a user object given its ID
+     * TODO: add more security checks
+     */
+    public static function getUserById($dbh, $id) {
+    
+        $sql = 'SELECT * FROM ' . self::USER_TABLE
+        . ' WHERE id = :id';
+    
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute(array(':id' => $id));
+    
+        $users = $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
+        if(empty($users)) {
+            return false;
+        }
+    
+        $users[0]->setDbHandle($dbh);
+        return $users[0];
+    }
     
     /**
      * Return a user object given email and password
@@ -381,15 +401,15 @@ class User {
      */
     public static function addUser($dbh, $username, $fullname, $password, $email, $timezone,  
                                    $type = self::TYPE_UNKNOWN, $status = self::STATUS_UNKNOWN,
-                                   $location = NULL, $iconurl = self::DEFAULT_ICON) {
+                                   $location = NULL, $icon_url = self::DEFAULT_ICON) {
 
         list($passhash, $salt) = self::getPassAndSalt($password); 
         $auth = '0';
            
         $sql = 'INSERT INTO ' . self::USER_TABLE
-             . '(username, fullname, passhash, salt, auth, email, type, status, timezone, location, iconurl) '
+             . '(username, fullname, passhash, salt, auth, email, type, status, timezone, location, icon_url) '
              . ' VALUES '
-             . '(:username, :fullname, :passhash, :salt, :auth, :email, :type, :status, :timezone, :location, :iconurl)';
+             . '(:username, :fullname, :passhash, :salt, :auth, :email, :type, :status, :timezone, :location, :icon_url)';
         
         $stmt = $dbh->prepare($sql);
 
@@ -404,7 +424,7 @@ class User {
                                     ':status'   => $status,
                                     ':timezone' => $timezone,
                                     ':location' => $location,
-                                    ':iconurl'  => $iconurl,
+                                    ':icon_url'  => $icon_url
                                    ));        
     }
 
@@ -467,8 +487,8 @@ class User {
             case 'f': $propertyName = 'fullname';
                       $propertyref = &$this->fullname;
                       break;
-            case 'i': $propertyName = 'iconurl';
-                      $propertyref = &$this->iconurl;
+            case 'i': $propertyName = 'icon_url';
+                      $propertyref = &$this->icon_url;
                       break;
             case 'l': $propertyName = 'lacation';
                       $propertyref = &$this->lacation;

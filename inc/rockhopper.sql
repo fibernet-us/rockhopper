@@ -59,7 +59,7 @@ CREATE TABLE RH_USER (
   status            tinyint       NOT NULL  DEFAULT 0,  
   timezone          tinyint       NOT NULL  DEFAULT 0, 
   location          varchar(255)            DEFAULT NULL,
-  iconurl           varchar(255)            DEFAULT NULL,
+  icon_url           varchar(255)            DEFAULT NULL,
 
   enabled           tinyint(1)    NOT NULL  DEFAULT 1,
 
@@ -77,6 +77,12 @@ CREATE TABLE RH_USER (
  * stores basic team info. 
  * member list is stored in RH_TEAM_MEMBER
  *
+ * == status ==
+ *   0 UNKNOWN
+ *   1 WORKING
+ *   2 IDLE
+ *   3 DISMISSED
+ *
  */
 DROP TABLE IF EXISTS RH_TEAM;
 CREATE TABLE RH_TEAM (
@@ -84,7 +90,7 @@ CREATE TABLE RH_TEAM (
   id           smallint      NOT NULL  AUTO_INCREMENT,
   name         varchar(255)  NOT NULL,
   description  text(1024)    NOT NULL,
-  isactive     tinyint       NOT NULL  DEFAULT 0,
+  status       tinyint       NOT NULL  DEFAULT 0,  
   icon_url     varchar(255)            DEFAULT NULL,
 
   PRIMARY KEY (id),

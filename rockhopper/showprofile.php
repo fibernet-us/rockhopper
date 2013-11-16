@@ -1,5 +1,7 @@
 <?php
 require_once 'tracking.php';
+require_once 'PHPDebug.php';
+
 $debug = new PHPDebug();
 $debug->debug("Running PHPDebug to output to browser console");
      
