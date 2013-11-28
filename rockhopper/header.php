@@ -17,10 +17,11 @@
     <div class="nav-collapse collapse">
         <ul class="nav">
         <li><a href="">Home</a></li>
-        <li><a href="">Project</a></li>
+        <li><a href="">Dashboard</a></li>
+        <li><a href="">Task</a></li>
         <li><a href="">Sprint</a></li>
-        <li><a href="">Backlog</a></li>
-        <li><a href="">Team</a></li>
+        <li><a href="">Message</a></li>
+        <li><a href="">Project</a></li>
         <li><a href="showusers.php">User</a></li>
         </ul>
     </div>

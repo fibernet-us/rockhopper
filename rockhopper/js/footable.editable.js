@@ -9,14 +9,26 @@
  * Requires jQuery - http://jquery.com/
  * Requires FooTable http://themergency.com/footable
  */
+ 
+ /*
+ * To use the plugin, besides those functions included in footable.js, please add:
+ * ====> id="XXXX" server-table="XXXX" to <table>
+ * ====> data-type="option"/"progress" (and data-option="xxx:xxx:..." option-value="x:x:..." for data-type="option") to <th>
+ * ====> data-ft-buttons="True" to <th> that you want to insert buttons for edit/delete
+ *       The suggested location is the last <th>. That way you don't need to add an additional <td></td> for each <tr>.
+ * ====> <td><button class="btn" type="button" value="Add"><i class="icon-plus-sign"></i><span class="left_padding">New</button></td>         to <tfoot>.
+ * ====> set server info in the file "footable_editable.php".
+ * ====> for demo use, please set dataHandlerURL to 'demo' in Line 31/32.
+ */
 
 (function ($, w, undefined) {
     if (w.footable == undefined || w.footable == null)
         throw new Error('Please check and make sure footable.js is included in the page and is loaded prior to this script.');
 
     var defaults = {
-        serverTableName: undefined,
-        dataHandlerURL: "demo",
+		//set it to demo for no server mode
+        dataHandlerURL: "footable_editable.php",
+		//dataHandlerURL: 'demo',
 		autoLoad: false,
         createDetail:
             function (element, data) {
@@ -168,23 +180,30 @@
 	  }
 		
     }
-
-
-    // target是event的DOM
+	
+	
+	// target是event的DOM
 	function processCommand(target, command) {
+		var table = $(target).closest('table');
         var tId = $(target).closest('table').attr('id');
-
         var curRow = getCurrentRow(target);
 
         var updateRecord = {};
-        updateRecord.command = command;
-        updateRecord.table = $.data(w.footable, tId + '_serverTableName');
+		//
+        updateRecord.fooCommand = command;
+        updateRecord.fooTable = $.data(w.footable, tId + '_serverTableName');
+		
+		if  (command == 'Update' || command == 'Delete') {
+			var curRowId = curRow.attr('id');
+			//alert("row id is: " + curRowId);
+			updateRecord.curRowId = curRowId;
+		}
 
-        if (command == "Load") {
+        /*if (command == "Load") {
             //send the updateRecord to the server via AJAX
             transportData(target,updateRecord);
             return;
-        }
+        }*/
 		
         
         $(curRow).find('td').each(function () {
@@ -193,13 +212,22 @@
             var fieldIsVisible = $(this).is(":visible");
 			//fieldIsControl不然就是undified, 不然就是true，为该td是否可控的标识
             var fieldIsControl = $.data(w.footable, tId + '_colControlType')[$(this).index()];
-			//判断改行的index是否在idColIndexes里，在的话返回第几个位置；不在的话返回-1
-			var fieldIsIdCol = $.data(w.footable, tId + '_idColIndexes').indexOf($(this).index()) >= 0;
+			var fieldIsnotButton = ($.data(w.footable, tId + '_buttonIndexes').buttonCols).indexOf($(this).index()) < 0;
 			
-            //如果命令是add，那么该row所有内容都要送到服务器；不管命令是什么，都保存fooID那列的td
-			if (command == 'Add' || command == 'Update' || fieldIsIdCol) {
+            //如果命令是add或update，那么该row除了button之外的所有内容都要送到服务器;
+			if ((command == 'Add' && fieldIsnotButton) || (command == 'Update' && fieldIsnotButton)) {
                 //如果该列非control，则存每个name value队
-                if (fieldIsControl === undefined) updateRecord[fieldName] = $(this).text();
+                if (fieldIsControl === undefined) {
+					var data_type = $(table).find('th').eq($(this).index()).attr('data-type');
+					if (data_type === "option") 
+						var value = $("option:selected", this).val();
+					// hasn't tested yet for progress
+					else if (data_type === "progress")
+						var value = $(this).find("INPUT").val();
+					else 
+						var value = $(this).find("INPUT").val();
+					updateRecord[fieldName] = value;
+				}
                 else {
                     var ctlVal = $(this).find('button').val();
                     if (ctlVal != "true") ctlVal = "false";
@@ -212,7 +240,7 @@
         //send the updateRecord to the server via AJAX
         transportData(target,updateRecord);
     }
-
+	
     function transportData(target, updateRecord) {   
         var tId = $(target).closest('table').attr('id');
 		var dataHandlerURL = $.data(w.footable, tId + '_dataHandlerURL');
@@ -224,25 +252,28 @@
         if (dataHandlerURL == 'demo' || updateRecord === undefined) { 
 			alert("Demo Mode:\r\nThe following JSON data would be sent to the server: \r\n" + JSON.stringify(updateRecord));
 			//mimic server response
-			var response = {};
-			    response.response = "Success";
-				response.message = "Your message here";
-				response.data = undefined;
-			alert("Demo Mode:\r\nThe server responded: \r\n" + JSON.stringify(response));
+			var response = updateRecord;
+			    response.serverResponse = "Success";
+			alert("Demo Mode:\r\nThe server responded: \r\n" + JSON.stringify(response.serverResponse));
 			processServerResponse(target, JSON.stringify(response), updateRecord); 
             return;
         }
-       
-        //Send the updateRecord to the server via AJAX for valid command.
-        $.ajax({
-            type: "POST",
-            url: $.data(w.footable, tId + '_dataHandlerURL'),
-            contentType: "application/json; charset=uft-8",
-            data: JSON.stringify(updateRecord)
-        })
-        .done(function (data) { processServerResponse(target, data, updateRecord); })
-        .fail(function (msg) { alert("error: " + JSON.stringify(msg.responseText)); });
-        //.always(function (msg) { alert("complete" + JSON.stringify(msg)); });
+		
+		
+			//Send the updateRecord to the server via AJAX for valid command.
+			//var updateRecord = JSON.stringify(updateRecord); //不可以加这行，除非php要echo整个结果
+		$.ajax({
+			type: "POST",
+			url: $.data(w.footable, tId + '_dataHandlerURL'),
+			contentType: "application/json; charset=utf-8",
+			data:  JSON.stringify(updateRecord),
+			success : function(data) { 
+				processServerResponse(target, data, updateRecord);
+			},
+			error: function(msg){ alert("error: " + JSON.stringify(msg.responseText));}
+		})
+	
+	
     }
 	
 	function tryJSONParse(data){
@@ -260,53 +291,49 @@
     function processServerResponse(target, data, updateRecord) {
 		//the data response variable can be json or a valid javascript object...
         data = tryJSONParse(data);
-		data.responseData = tryJSONParse(data.responseData);
+		//data.responseData = tryJSONParse(data.responseData);
 		
         var table = $(target).closest('table');
         var curRow = getCurrentRow(target);
         var nextRow = $(curRow).next();
+		
 
         //handle processing for fooButtons
-        if ($(target).find('button') && data.response != "Error") {
-            if (updateRecord.command == "Delete" && data.response == "Success") {
+        if ($(target).find('button') && data.serverResponse == "Success") {
+			deleteCssToRow(curRow);
+			
+            if (updateRecord.fooCommand == "Delete") {
+				alert("Data is successfully deleted.");
                 deleteRow(curRow);
             }
-        }
-
-        /*
-		//Handle processing AJAX server responses.
-        if (data.response == "Success") {
-            //Do nothing!
-        }
-        else if (data.response == "Load") {
-            deleteAllRows(table);
-            addRows(table, data.responseData);
-        }
-        else if (data.response == "Append") {
-            addRows(table, data.responseData);
-        }
-        else if (data.response == "Update") {
-            updateRow(curRow, data.responseData);
-        }
-        else if (data.response == "Delete") {
-            deleteRow(curRow);
-        }
-        else if (data.response == "DeleteAll") {
-            deleteAllRows(table);
+			
+            else {
+				// if command == add, need to add the new id that is just inserted into the server.
+				if (updateRecord.fooCommand == "Add") {
+					alert ("New data is successfully added.");
+					$(curRow).attr('id', data.lastInsertId);
+					delete data.lastInsertId;
+					$(curRow).removeClass('fooNewRow');
+				}
+				if (updateRecord.fooCommand == "Update") {
+					alert ("The data is successfully updated.");
+					delete data.curRowId;
+					$(curRow).removeClass('fooEditRow');
+				}
+				delete data.fooCommand;
+				delete data.fooTable;
+				delete data.serverResponse;
+				//if add or edit, update current row.
+				updateRow(curRow, data);
+				switchButtons(target);
+            }
+			
         }
 		
-		//如果出现Error，该row要换回OldValue 并重新加button!!!!
-        else if (data.response == "Error") {
-            alert("The update was not successful\r\n" + data.message);
-
-            if (updateRecord.command == 'Update') {
-				//重回旧数据
-            }
-        }
         else {
-            alert('Invalid server response! Response recieved: ' + data.response);
+            alert("The update was not successful.\n Some data may be overlapped with data in the server.\n Please change the input or cancel the action.\n");
         }
-		*/
+		
     }
 
     function getCurrentRow(target) {
@@ -315,12 +342,37 @@
         return curRow;
     }
 
-	function updateRow(row, rowData) {
+	/*function updateRow(row, rowData) {
         var table = $(row).closest('table');
         var rowTd = $(row).find('td');
         $.each(rowData, function (name, value) {
             var colIndex = $.data(w.footable, $(table).attr('id') + '_colNames').indexOf(name);
             if (colIndex != -1) $(rowTd).eq(colIndex).text(value);
+        });
+    }*/
+	
+	
+	// update row according to data sent by server and different data_type
+	function updateRow(row, rowData) {
+        var table = $(row).closest('table');
+        var rowTd = $(row).find('td');
+		
+        $.each(rowData, function (name, value) {
+            var colIndex = $.data(w.footable, $(table).attr('id') + '_colNames').indexOf(name);
+			var fieldIsnotButton = ($.data(w.footable, $(table).attr('id') + '_buttonIndexes').buttonCols).indexOf(colIndex) < 0;
+			var data_type = $(table).find('th').eq(colIndex).attr('data-type');
+            if (colIndex != -1 && fieldIsnotButton && (data_type !== "uneditable")) {
+				if (data_type === "option") {
+					var value = $("option[value=" + value +"]", $(rowTd).eq(colIndex)).text();
+					$(rowTd).eq(colIndex).text(value);
+				}
+				//data_type === "progress" haven't tested yet
+				else if (data_type === "progress") {
+					var newTd = '<div class="progress progress-success progress-striped"><div class="bar" style="width: ' + value + '%">' + value + '%</div></div>';
+					$(rowTd).eq(colIndex).html(newTd);
+				}
+				else $(rowTd).eq(colIndex).text(value);
+			}
         });
     }
 
@@ -373,61 +425,6 @@
 		$(row).css('border', 'none');
 	}
 
-    /*function addRows(table, tableRows) {
-        //exit if there are no rows to process.
-        if (tableRows === undefined) return;
-        //Assume tableRows is a JSON string and try to parse, if it is not already and object
-
-        var tableTh = $(table).find('th');
-        var rows = "";
-        var fooButtonIndexes = getButtonIndexes(table);
-
-        var ft = $(table).data('ft');
-
-        $(tableRows).each(function () {
-            var tr = '<tr>';
-            var i = 0;
-            //Build valid tr's for row in tableRows 
-            $.each(this, function (name, value) {
-                //use any custom return parsers to parse the value for each new row's cell
-                var retParser = tableTh.eq(i).attr('data-return-type');
-                if (retParser != undefined) {
-                    var parser = ft.options.parsers[retParser];
-                    value = parser(value);
-                }
-
-                var fieldIsControl = $.data(w.footable, $(table).attr('id') + '_colControlType')[i];
-                if (fieldIsControl != undefined) {
-                    if (value == "true" || value ==true) value = '<input type="checkbox" checked="checked" />';
-                    else value = '<input type="checkbox" />';
-                }
-                //capture and add fooTable data-class values.
-                var classes = "";
-                var dataClass = $(tableTh).eq(i).attr('data-class');
-                if (dataClass !== undefined) classes = ' class="' + dataClass + '" ';
-                //handle hidden fields    
-                var style = "";
-                if (!$(tableTh).eq(i).is(":visible")) style = ' style="display:none;" ';
-                
-                tr += '<td' + classes + style + '>' + value + '</td>';
-                i++
-            });
-
-            //add 1 empty td for each button column 
-            $(fooButtonIndexes.buttonColCt).each(function () {
-                tr += '<td></td>';
-            });
-            tr += '</tr>';
-            rows += tr;
-        });
-
-        $(table).find('tbody').prepend(rows);
-        addFooRowButtons(table);
-
-        $(table).data('ft').bindToggleSelectors();
-        $(table).data('ft').resize();  //makes new rows display correct when fields are hidden.
-    }*/
-
 	$.fn.ftEditable = function (target) {
 		var e = {};
 		e.processCommand = processCommand;
@@ -454,17 +451,14 @@
 			
             //capture any default over-rides by user
             var tId = $(ft.table).attr('id');
+			var serverTable = $(ft.table).attr('server-table');
 			
 			$.data(w.footable, tId + '_dataHandlerURL', ft.options.dataHandlerURL);
-            $.data(w.footable, tId + '_serverTableName', ft.options.serverTableName);
 			$.data(w.footable, tId + '_autoLoad', ft.options.autoLoad);
 			
             $(ft.table).bind({
                 'footable_initialized': function (e) {
 
-                    //Get array of all the column names, indexes with class='id' and footableButtons
-                    ////该列是否有fooID，一般是第一行，是该列的标识符[index1, index2, index3...]
-					var idColIndexes = new Array();
                     //fieldName是该td的col Names(head里定义的) [name, staus, days...]
                     var colNames = new Array();
 					//后面几处和开头函数都去掉了此参数 //fooEditableCols = new Array();
@@ -475,18 +469,14 @@
                     $(ft.table).find('th').each(function (index) {
                         var fieldName = $(this).text().trim();
                         colNames.push(fieldName);
-                        if ($(this).hasClass('fooId')) {
-                            idColIndexes.push(index);
-                        }
 						
                         colControlType.push($(this).attr('data-ft-control'));
 
                     });
                     //set global table specific variables
                     $.data(w.footable, tId + '_colNames', colNames);
-                    $.data(w.footable, tId + '_idColIndexes', idColIndexes);
                     $.data(w.footable, tId + '_colControlType', colControlType);
-					
+                    $.data(w.footable, tId + '_serverTableName', serverTable);
 
 					$(ft.table).on('click', 'button[value="Add"]', function (e) {
 						//新建空白行
@@ -513,10 +503,12 @@
 									 $(this).append('<input type="date">');
 								 }
 							     else if (data_type === "option") {
-									 var newTd = '<select class="td_option" name="status">';
-									 var option=$(ft.table).find('th').eq(index).attr('data-option').split(":"); 
-									 for (i=0;i<option.length ;i++ ){
-										 newTd +='<option value="' + option[i] +'">' + option[i] +'</option>';
+									 var newTd = '<select name="status">';
+									 var option=$(ft.table).find('th').eq(index).attr('data-option').split(":");
+									 var value=$(ft.table).find('th').eq(index).attr('option-value').split(":");
+									  
+									 for (i=0; i<option.length; i++ ){
+										 newTd +='<option value="' + value[i] +'">' + option[i] +'</option>';
 									 }
 									 newTd += '</select>';
 									 $(this).append(newTd);
@@ -539,7 +531,6 @@
 						 
 						 $.data(w.footable, tId + '_oldRowValue', oldValue);
 						 
-						 
 						 $(curRow).find('td').each(function(index) {
 							 
 							 oldValue.push($(this).html());
@@ -550,39 +541,43 @@
 								 //如果该列可编辑
 								 if (data_type !== "uneditable") {
 								 
-								 if ($(this).find('div').length <=0)
-							         var value = $(this).text();
-							     else if (data_type === "progress") {
-								     var val = $(this).text().trim();
-									 var value =val.substr(0,val.length-1);
-								 }
-								 else
-							         var value = $(this).text().trim();
+								 	if ($(this).find('div').length <=0)
+							        	var value = $(this).text();
+							     	else if (data_type === "progress") {
+								    	var val = $(this).text().trim();
+										var value =val.substr(0,val.length-1);
+									}
+									else
+										var value = $(this).text().trim();
 									 
-							     $(this).empty();
+							     	$(this).empty();
 								 
-							     if (data_type === undefined) {
-								     $(this).append('<input type="text" value="'+ value + '">');
-							     }
-							     else if (data_type === "integer") {
-									 $(this).append('<input type="number" value="'+ value + '">');
-								 }
-							     else if (data_type === "date") {
-									 $(this).append('<input type="date" value="'+ value + '">');
-								 }
-							     else if (data_type === "option") {
-									 var newTd = '<select class ="td_option" name="status">';
-									 var option=$(ft.table).find('th').eq(index).attr('data-option').split(":"); 
-									 for (i=0;i<option.length ;i++ ){
-										 newTd +='<option value="' + option[i] +'">' + option[i] +'</option>';
-									 }
-									 newTd += '</select>';
-									 $(this).append(newTd);
-								 }
-							     else if (data_type === "progress") {
-								     $(this).append('<input type="number"  name="quantity" min="0" max="100" value="'+ value + '">');
-								 }
-							 }
+							     	if (data_type === undefined) {
+								    	$(this).append('<input type="text" value="'+ value + '">');
+							     	}
+							     	else if (data_type === "integer") {
+										$(this).append('<input type="number" value="'+ value + '">');
+								 	}
+							     	else if (data_type === "date") {
+										$(this).append('<input type="date" value="'+ value + '">');
+								 	}
+							     	else if (data_type === "option") {
+										var newTd = '<select name="status">';
+										var selectOption=$(ft.table).find('th').eq(index).attr('data-option').split(":");
+									    var selectValue=$(ft.table).find('th').eq(index).attr('option-value').split(":");
+										for (i=0;i<selectOption.length ;i++ ){
+											if (selectOption[i] == value) 
+												newTd +='<option value="' + selectValue[i] +'" selected="selected">' + selectOption[i] +'</option>';
+											else
+												newTd +='<option value="' + selectValue[i] +'">' + selectOption[i] +'</option>';
+									 	}
+									 	newTd += '</select>';
+									 	$(this).append(newTd);
+									}
+							     	else if (data_type === "progress") {
+								    	$(this).append('<input type="number"  name="quantity" min="0" max="100" value="'+ value + '">');
+								 	}
+							 	}
 							 }
 						 });
 						 
@@ -604,51 +599,16 @@
 					
 					$(ft.table).on('click', 'button[value="Ok"]', function (e) {
 						var curRow = $(this).closest('tr');
-						deleteCssToRow(curRow);
+							
+						if ($(curRow).hasClass('fooNewRow'))
+							processCommand(e.target, 'Add');
 						
-						//确定删除行
-						if ($(curRow).hasClass('fooDeleteRow')) {
+						else if ($(curRow).hasClass('fooEditRow'))
+							processCommand(e.target, 'Update');
+						
+						else if ($(curRow).hasClass('fooDeleteRow'))
 							processCommand(e.target, 'Delete');
-						}
-						
-						//确定添加or修改行
-						else {
-							//从input状态转为确定输入
-							$(curRow).find('td').each(function(index) {
-							 
-								var data_type = $(ft.table).find('th').eq(index).attr('data-type');
-								if (data_type === "option") {
-									var value = $('.td_option option:selected').val();
-									$(this).text(value);
-								}
-							    else if (data_type === "progress") {
-									var value = $(this).find("INPUT").val();
-									var newTd = '<div class="progress progress-success progress-striped"><div class="bar" style="width: ' + value + '%">' + value + '%</div></div>';
-									$(this).html(newTd);
-									
-								}
-								else {
-									var value = $(this).find("INPUT").val();
-									$(this).text(value);
-								}
-								
-							});
-							
-							//确定添加行
-							if ($(curRow).hasClass('fooNewRow')) {
-								processCommand(e.target, 'Add');
-								$(curRow).removeClass('fooNewRow');
-							}
-							
-							//确定修改行
-							else if ($(curRow).hasClass('fooEditRow')) {
-								processCommand(e.target, 'Update');
-								$(curRow).removeClass('fooEditRow');
-							}
-							
-							switchButtons(e.target);
-						}
-                    });
+					});
 					
 					
 					$(ft.table).on('click', 'button[value="Cancel"]', function (e) {

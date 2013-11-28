@@ -210,7 +210,7 @@ class User {
 	 /**
 	 * Change password.
      */
-	public function changePassword($dbh, $oldpwd, $newpwd) {
+	public function changePassword($oldpwd, $newpwd) {
         $passhash = $this->getPasshash();
         $salt = $this->getSalt();
 

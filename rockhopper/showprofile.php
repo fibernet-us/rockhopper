@@ -1,9 +1,5 @@
 <?php
 require_once 'tracking.php';
-require_once 'PHPDebug.php';
-
-$debug = new PHPDebug();
-$debug->debug("Running PHPDebug to output to browser console");
      
 $curUser = doAutoLogin($dbh);
 
@@ -13,8 +9,12 @@ if($_POST['submit'] == 'Update Profile') {
     if($_POST['fullname'] && $_POST['email'] && $_POST['timezone']) {
         $_POST['fullname'] = safe_var($_POST['fullname']);
         $_POST['email'] = safe_var($_POST['email']);
+        $_POST['type'] = safe_var($_POST['type']);
+        $_POST['status'] = safe_var($_POST['status']);
 		$curUser->setFullname($_POST['fullname']);
 		$curUser->setEmail($_POST['email']);
+		$curUser->setType($_POST['type']);
+		$curUser->setStatus($_POST['status']);
 		$curUser->setTimezone($_POST['timezone']);
         $_SESSION['msg']['updateprofile-success'] = 'Your profile is updated!';
 					
@@ -28,7 +28,7 @@ if($_POST['submit'] == 'Change Password') {
         $_POST['oldpwd'] = safe_var($_POST['oldpwd']);
         $_POST['newpwd'] = safe_var($_POST['newpwd']);
 		
-		$changeResult = $curUser->changePassword($dbh, $_POST['oldpwd'], $_POST['newpwd']);
+		$changeResult = $curUser->changePassword($_POST['oldpwd'], $_POST['newpwd']);
         if ($changeResult==false)
 			$_SESSION['msg']['changepwd-err'] = 'Please input the correct password.';
 		else
@@ -121,47 +121,77 @@ require_once 'header.php';
     <div class="span6">
       <h4 style='text-align: left; margin-top: 30px;'><?php echo $curUser->getUsername() ?>'s profile</h4>
       <form class="form-horizontal" id="profileForm" method="post" action="showprofile.php">
+      
         <div class="control-group">
           <label class="control-label">Real Name</label>
           <div class="controls">
             <input type="text" name="fullname" value="<?php echo $curUser->getFullname() ?>" class="input-xlarge" maxlength="20">
           </div>
         </div>
+        
         <div class="control-group">
           <label class="control-label">Email</label>
           <div class="controls">
             <input type="text" name="email" value="<?php echo $curUser->getEmail() ?>" class="input-xlarge validate[required,custom[email]] text-input" maxlength="40">
           </div>
         </div>
+        
+        <div class="control-group">
+          <label class="control-label">Type</label>
+          <div class="controls">
+            <select name="type" class="input-xlarge">
+              <option value="0" <?php echo $curUser->getType()==0?'selected="selected"':'' ?>>Unknown</option>
+              <option value="1" <?php echo $curUser->getType()==1?'selected="selected"':'' ?>>Admin</option>
+              <option value="2" <?php echo $curUser->getType()==2?'selected="selected"':'' ?>>Project Owner</option>
+              <option value="3" <?php echo $curUser->getType()==3?'selected="selected"':'' ?>>Dev</option>
+              <option value="4" <?php echo $curUser->getType()==4?'selected="selected"':'' ?>>Scrum Master</option>
+              <option value="5" <?php echo $curUser->getType()==5?'selected="selected"':'' ?>>Chicken</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label class="control-label">Status</label>
+          <div class="controls">
+            <select name="status" class="input-xlarge">
+              <option value="0" <?php echo $curUser->getType()==0?'selected="selected"':'' ?>>Unknown</option>
+              <option value="1" <?php echo $curUser->getType()==1?'selected="selected"':'' ?>>Working</option>
+              <option value="2" <?php echo $curUser->getType()==2?'selected="selected"':'' ?>>Idle</option>
+              <option value="3" <?php echo $curUser->getType()==3?'selected="selected"':'' ?>>On leave</option>
+              <option value="4" <?php echo $curUser->getType()==4?'selected="selected"':'' ?>>Left</option>
+            </select>
+          </div>
+        </div>
+        
         <div class="control-group">
           <label class="control-label">Time Zone</label>
           <div class="controls">
-            <select name="timezone" id="DropDownTimezone" class="input-xlarge">
-              <option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
-              <option value="-11.0">(GMT -11:00) Midway Island, Samoa</option>
-              <option value="-10.0">(GMT -10:00) Hawaii</option>
-              <option value="-9.0">(GMT -9:00) Alaska</option>
-              <option selected="selected" value="-8.0">(GMT -8:00) Pacific Time (US & Canada)</option>
-              <option value="-7.0">(GMT -7:00) Mountain Time (US & Canada)</option>
-              <option value="-6.0">(GMT -6:00) Central Time (US & Canada), Mexico City</option>
-              <option value="-5.0">(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima</option>
-              <option value="-4.0">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
-              <option value="-3.0">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
-              <option value="-2.0">(GMT -2:00) Mid-Atlantic</option>
-              <option value="-1.0">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
-              <option value="0.0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
-              <option value="1.0">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
-              <option value="2.0">(GMT +2:00) Kaliningrad, South Africa</option>
-              <option value="3.0">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-              <option value="4.0">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-              <option value="5.0">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-              <option value="6.0">(GMT +6:00) Almaty, Dhaka, Colombo</option>
-              <option value="7.0">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
-              <option value="8.0">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
-              <option value="9.0">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-              <option value="10.0">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
-              <option value="11.0">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
-              <option value="12.0">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+            <select name="timezone" class="input-xlarge">
+              <option value="-12.0" <?php echo $curUser->getTimezone()==-12?'selected="selected"':'' ?>>(GMT -12:00) Eniwetok, Kwajalein</option>
+              <option value="-11.0" <?php echo $curUser->getTimezone()==-11?'selected="selected"':'' ?>>(GMT -11:00) Midway Island, Samoa</option>
+              <option value="-10.0" <?php echo $curUser->getTimezone()==-10?'selected="selected"':'' ?>>(GMT -10:00) Hawaii</option>
+              <option value="-9.0" <?php echo $curUser->getTimezone()==-9?'selected="selected"':'' ?>>(GMT -9:00) Alaska</option>
+              <option value="-8.0" <?php echo $curUser->getTimezone()==-8?'selected="selected"':'' ?>>(GMT -8:00) Pacific Time (US & Canada)</option>
+              <option value="-7.0" <?php echo $curUser->getTimezone()==-7?'selected="selected"':'' ?>>(GMT -7:00) Mountain Time (US & Canada)</option>
+              <option value="-6.0" <?php echo $curUser->getTimezone()==-6?'selected="selected"':'' ?>>(GMT -6:00) Central Time (US & Canada), Mexico City</option>
+              <option value="-5.0" <?php echo $curUser->getTimezone()==-5?'selected="selected"':'' ?>>(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima</option>
+              <option value="-4.0" <?php echo $curUser->getTimezone()==-4?'selected="selected"':'' ?>>(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+              <option value="-3.0" <?php echo $curUser->getTimezone()==-3?'selected="selected"':'' ?>>(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+              <option value="-2.0" <?php echo $curUser->getTimezone()==-2?'selected="selected"':'' ?>>(GMT -2:00) Mid-Atlantic</option>
+              <option value="-1.0" <?php echo $curUser->getTimezone()==-1?'selected="selected"':'' ?>>(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+              <option value="0.0" <?php echo $curUser->getTimezone()==0?'selected="selected"':'' ?>>(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+              <option value="1.0" <?php echo $curUser->getTimezone()==1?'selected="selected"':'' ?>>(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+              <option value="2.0" <?php echo $curUser->getTimezone()==2?'selected="selected"':'' ?>>(GMT +2:00) Kaliningrad, South Africa</option>
+              <option value="3.0" <?php echo $curUser->getTimezone()==3?'selected="selected"':'' ?>>(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+              <option value="4.0" <?php echo $curUser->getTimezone()==4?'selected="selected"':'' ?>>(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+              <option value="5.0" <?php echo $curUser->getTimezone()==5?'selected="selected"':'' ?>>(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+              <option value="6.0" <?php echo $curUser->getTimezone()==6?'selected="selected"':'' ?>>(GMT +6:00) Almaty, Dhaka, Colombo</option>
+              <option value="7.0" <?php echo $curUser->getTimezone()==7?'selected="selected"':'' ?>>(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+              <option value="8.0" <?php echo $curUser->getTimezone()==8?'selected="selected"':'' ?>>(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+              <option value="9.0" <?php echo $curUser->getTimezone()==9?'selected="selected"':'' ?>>(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+              <option value="10.0" <?php echo $curUser->getTimezone()==10?'selected="selected"':'' ?>>(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+              <option value="11.0" <?php echo $curUser->getTimezone()==11?'selected="selected"':'' ?>>(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+              <option value="12.0" <?php echo $curUser->getTimezone()==12?'selected="selected"':'' ?>>(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
             </select>
           </div>
         </div>
@@ -202,7 +232,7 @@ require_once 'header.php';
         <?php
               
                 if($_SESSION['msg']['changepwd-success']) {
-                    echo $_SESSION['msg']['changepwd-success'];
+                    echo '<p style="color: green;">'.$_SESSION['msg']['changepwd-success'].'</p>';
                     unset($_SESSION['msg']['changepwd-success']);
                 }
                  
@@ -212,7 +242,7 @@ require_once 'header.php';
                 }
                  
                 if($_SESSION['msg']['updateprofile-success']) {
-                    echo $_SESSION['msg']['updateprofile-success'];
+                    echo '<p style="color: green;">'.$_SESSION['msg']['updateprofile-success'].'</p>';
                     unset($_SESSION['msg']['updateprofile-success']);
                 }
                 

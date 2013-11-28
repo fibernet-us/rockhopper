@@ -5,15 +5,15 @@
 <meta name="description" content="a project management system for Scrum">
 <meta name="keywords" content="Rockhopper, Scrum, project management">
 <meta http-equiv="author" content="estel">
-<link rel="stylesheet" href="../css/bootstrap.css" type="text/css">
-<link rel="stylesheet" href="../css/footable.core.css" type="text/css">
-<link rel="stylesheet" href="../css/style.css" type="text/css">
-<link href="../css/footable.editable-1.0.css" rel="stylesheet" type="text/css" >
+<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+<link rel="stylesheet" href="css/footable.core.css" type="text/css">
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link href="css/footable.editable-1.0.css" rel="stylesheet" type="text/css" >
 <!--script type="text/javascript" src="js/jquery.min.js"></script-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="../js/bootstrap.js"></script>
-<script type="text/javascript" src="../js/footable.js"></script>
-<script src="../js/footable.editable.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script type="text/javascript" src="js/footable.js"></script>
+<script src="js/footable.editable.js" type="text/javascript"></script>
 
   
   <script type="text/javascript">
@@ -48,11 +48,11 @@ require_once 'header.php';
 		   <a href="#clear" class="clear-filter" title="clear filter">[clear]</a>
         </p>
         
-        <table class="table footable demo" data-filter="#filter" data-page-size="5">
+         <table class="table footable demo" id="project_table" data-filter="#filter" data-page-size="5" server-table="RH_USER">
           <thead>
             <tr>
               <th class="fooId" data-toggle="true">Name</th>
-              <th data-type="option" data-option="Completed:Active:Not Started">Status</th>
+              <th data-type="option" data-option="Completed:Active:Not Started" option-value="0:1:2">Status</th>
               <th data-type="integer" data-sort-ignore="true" data-hide="phone,tablet">Est.Effort</th>
               <th data-type="integer" data-sort-ignore="true" data-hide="phone,tablet">Act.Effort</th>
               <th data-sort-ignore="true" data-hide="phone">Team Leader</th>

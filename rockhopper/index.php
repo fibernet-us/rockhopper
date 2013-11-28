@@ -1,8 +1,10 @@
 
 <?php
+
 require_once 'tracking.php';
 
 if($_POST['submit'] == 'Login') {
+	var_dump($_POST);
     if($_POST['login'] && $_POST['password']) {
         $_POST['login'] = safe_var($_POST['login']);
         $_POST['password'] = safe_var($_POST['password']);
@@ -38,15 +40,55 @@ else if($_POST['submit'] == 'Create Account') {
 <script type="text/javascript" src="js/bootstrap.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine.js"></script>
 <script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function(){
     $("#tab").validationEngine();
     $("#loginForm").validationEngine();
-   });
+});
 
 function showErrMessage(message) {
-	  $("#errMessage").append("<div  class=\"errmessage\">" + message + "</div>");
-	}
+	$("#errMessage").append("<div  class=\"errmessage\">" + message + "</div>");
+}
+
+function check_username(value) {
+	$("#user_message").html(" checking...").css("color","red");
+	if (value == "") return false;
+
+	$.ajax({
+		type:"get",
+		url:"checkavailable.php",
+		data:{checkuser:value, nametype:"isname"},
+		success:function(data){
+			if(data==0){
+				$("#user_message").html(" Username available.").css("color","green");
+			}
+			else if(data==1) {
+				$("#user_message").html(" Username already taken.").css("color","red");
+			}
+		}
+	});
+}
+
+function check_email(value) {
+	$("#email_message").html(" checking...").css("color","red");
+	if (value == "") return false;
+
+	$.ajax({
+		type:"get",
+		url:"checkavailable.php",
+		data:{checkuser:value, nametype:"isemail"},
+		success:function(data){
+			if(data==2){
+				$("#email_message").html(" Email available.").css("color","green");
+			}
+			else if(data==3){
+				$("#email_message").html(" Email has been used.").css("color","red");
+			}
+		}
+	});
+}
+
 </script>
 </head>
 
@@ -113,7 +155,8 @@ function showErrMessage(message) {
                   <div class="control-group">
                     <label class="control-label">Username</label>
                     <div class="controls">
-                      <input type="text" name="username" class="validate[required,custom[onlyLetterNumber]] text-input" maxlength="20">
+                      <input type="text" name="username" class="validate[required,custom[onlyLetterNumber]] text-input" maxlength="20" onchange="check_username(this.value)">
+                    <div id="user_message"></div>
                     </div>
                   </div>
                   
@@ -127,7 +170,8 @@ function showErrMessage(message) {
                   <div class="control-group">
                     <label class="control-label">Email</label>
                     <div class="controls">
-                      <input type="text" name="email" class="validate[required,custom[email]] text-input" maxlength="40">
+                      <input type="text" name="email" class="validate[required,custom[email]] text-input" maxlength="40" onchange="check_email(this.value)">
+                    <div id="email_message"></div>
                     </div>
                   </div>
                   
@@ -166,7 +210,7 @@ function showErrMessage(message) {
                 }
                  
                 if($_SESSION['msg']['reg-success']) {
-                    echo $_SESSION['msg']['reg-success'];
+                    echo '<p style="color: green;">'.$_SESSION['msg']['reg-success'].'</p>';
                     unset($_SESSION['msg']['reg-success']);
                 }
                 
