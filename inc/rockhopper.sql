@@ -7,11 +7,12 @@
  * @version  1.11
  * @history
  *   09/03/2013: created out of Rockhopper schema in Perl
- *               added table RH_USER, RH_TASK, RH_SUBTASK, RH_USERLOG
+ *               added table RH_USER, RH_TASK, RH_SUBTASK, RH_USERLOG,
+ *                           RH_ASSIGNMENT
  *
  *   09/18/2013: added tables RH_TEAM, RH_TEAM_MEMBER, RH_PRODUCT, 
- *                            RH_PRODUCT_TEAM, RH_MESSAGE
- *
+ *                            RH_PRODUCT_TEAM, RH_BACKLOG, RH_BACKLOG_TASK, 
+ *                            RH_MESSAGE
  *
  *
  * @notes
@@ -218,6 +219,40 @@ CREATE TABLE RH_SUBTASK (
 
 /******************************************************************************
  *
+ * table RH_ASSIGNMENT
+ * 
+ * stores task worker info: task id - user id (dev) - user id (tester)
+ *
+ */
+DROP TABLE IF EXISTS RH_ASSIGNMENT;
+CREATE TABLE RH_ASSIGNMENT (
+
+  task_id    int        NOT NULL,
+  dev_id     smallint   NOT NULL,  
+  tester_id  smallint   NOT NULL, 
+
+  PRIMARY KEY (task_id, dev_id),
+
+  CONSTRAINT fk_RH_ASSIGNMENT_task_id_RH_TASK_id 
+             FOREIGN KEY (task_id) REFERENCES RH_TASK (id)
+             ON UPDATE CASCADE
+             ON DELETE CASCADE,
+
+  CONSTRAINT fk_RH_ASSIGNMENT_dev_id_RH_USER_id 
+             FOREIGN KEY (dev_id) REFERENCES RH_USER (id) 
+             ON UPDATE CASCADE
+             ON DELETE CASCADE,
+
+  CONSTRAINT fk_RH_ASSIGNMENT_tester_id_RH_USER_id 
+             FOREIGN KEY (tester_id) REFERENCES RH_USER (id)
+             ON UPDATE CASCADE
+             ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/******************************************************************************
+ *
  * table RH_USERLOG
  *
  * logs user activities
@@ -314,6 +349,68 @@ CREATE TABLE RH_PRODUCT_TEAM (
 
   CONSTRAINT fk_RH_PRODUCT_TEAM_team_id_RH_TEAM_id 
              FOREIGN KEY (team_id) REFERENCES RH_TEAM (id) 
+             ON UPDATE CASCADE
+             ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+/******************************************************************************
+ *
+ * table RH_BACKLOG
+ *
+ * stores a product backlog (a product can have multiple backlogs)
+ *
+ */
+DROP TABLE IF EXISTS RH_BACKLOG;
+CREATE TABLE RH_BACKLOG (
+
+  id             smallint     NOT NULL AUTO_INCREMENT,
+  name           varchar(255) NOT NULL,
+  description    text(65535)  NOT NULL,
+  status         tinyint      NOT NULL DEFAULT 0,
+  date_start     date                  DEFAULT NULL,
+  date_deadline  date                  DEFAULT NULL,
+  date_end       date                  DEFAULT NULL,
+  date_lud       date                  DEFAULT NULL, 
+  icon_url       varchar(255)          DEFAULT NULL,
+
+  product_id  smallint NOT NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_RH_BACKLOG_name (name),
+
+  CONSTRAINT fk_RH_BACKLOG_product_id_RH_PRODUCT_id 
+             FOREIGN KEY (product_id) REFERENCES RH_PRODUCT (id) 
+             ON UPDATE CASCADE
+             ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/******************************************************************************
+ *
+ * table RH_BACKLOG_TASK
+ *
+ * stores backlog tasks: backlog id - task id 
+ *
+ */
+DROP TABLE IF EXISTS RH_BACKLOG_TASK;
+CREATE TABLE RH_BACKLOG_TASK (
+
+  backlog_id  smallint NOT NULL,
+  task_id     int      NOT NULL,
+
+  PRIMARY KEY (backlog_id, task_id),
+
+  CONSTRAINT fk_RH_BACKLOG_TASK_backlog_id_RH_BACKLOG_id 
+             FOREIGN KEY (backlog_id) REFERENCES RH_BACKLOG (id) 
+             ON UPDATE CASCADE
+             ON DELETE CASCADE,
+
+  CONSTRAINT fk_RH_BACKLOG_TASK_task_id_RH_TASK_id 
+             FOREIGN KEY (task_id) REFERENCES RH_TASK (id) 
              ON UPDATE CASCADE
              ON DELETE CASCADE
 
