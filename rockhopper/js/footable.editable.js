@@ -14,7 +14,8 @@
  * To use the plugin, besides those functions included in footable.js, please add:
  * ====> id="XXXX" server-table="XXXX" to <table>
  * ====> data-type="option"/"progress" (and data-option="xxx:xxx:..." option-value="x:x:..." for data-type="option") to <th>
- * ====> data-ft-buttons="True" to <th> that you want to insert buttons for edit/delete
+ * ====> data-ft-buttons="both" to <th> that you want to insert buttons for edit/delete
+ * ====> data-ft-buttons="delete" to <th> that you want to insert buttons for delete only
  *       The suggested location is the last <th>. That way you don't need to add an additional <td></td> for each <tr>.
  * ====> <td><button class="btn" type="button" value="Add"><i class="icon-plus-sign"></i><span class="left_padding">New</button></td>         to <tfoot>.
  * ====> set server info in the file "footable_editable.php".
@@ -145,6 +146,7 @@
 	//给某行添加button的程序，如果button标在每行最尾处，则每行html的<td></td>可省略，否则必须在相应列处加上<td></td>
 	//buttons实为getButtonIndexes的结果
 	function addButtonsToRow(row, buttons) {
+		var table = $(row).closest('table');
 		if ($(row).hasClass('fooNewRow')) {
           $(buttons.buttonCols).each(function (i) {
 			//button在中间，数据行有<td></td>
@@ -166,15 +168,25 @@
         $(buttons.buttonCols).each(function (i) {
 			//button在中间，数据行有<td></td>
             if ($(row).find('td').eq(buttons.buttonCols[i]).length > 0) {
-                    if ($(row).find('td').eq(buttons.buttonCols[i]).find('button[value="Delete"]').length <= 0) {
-                        $(row).find('td').eq(buttons.buttonCols[i]).append('<button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button>');
-                    }
-                    if ($(row).find('td').eq(buttons.buttonCols[i]).find('button[value="Edit"]').length <= 0) {
-                        $(row).find('td').eq(buttons.buttonCols[i]).append('<button class="btn" type="button" value="Edit"><i class="icon-pencil"></i></button>');
-                    }
+					if ($(table).find('th').eq(buttons.buttonCols[i]).attr('data-ft-buttons')==="both") {
+                    	if ($(row).find('td').eq(buttons.buttonCols[i]).find('button[value="Delete"]').length <= 0) {
+                        	$(row).find('td').eq(buttons.buttonCols[i]).append('<button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button>');
+                    	}
+                    	if ($(row).find('td').eq(buttons.buttonCols[i]).find('button[value="Edit"]').length <= 0) {
+                        	$(row).find('td').eq(buttons.buttonCols[i]).append('<button class="btn" type="button" value="Edit"><i class="icon-pencil"></i></button>');
+                    	}
+					}
+					if ($(table).find('th').eq(buttons.buttonCols[i]).attr('data-ft-buttons')==="delete") {
+                    	if ($(row).find('td').eq(buttons.buttonCols[i]).find('button[value="Delete"]').length <= 0) {
+                        	$(row).find('td').eq(buttons.buttonCols[i]).append('<button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button>');
+                    	}
+					}
 			//如果button在最结尾处，html可以不加<td></td>
             } else {
-                $(row).append('<td><button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button><button class="btn" type="button" value="Edit"><i class="icon-pencil"></i></button></td>');
+				if ($(table).find('th').eq(buttons.buttonCols[i]).attr('data-ft-buttons')==="both") 
+                	$(row).append('<td><button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button><button class="btn" type="button" value="Edit"><i class="icon-pencil"></i></button></td>');
+				if ($(table).find('th').eq(buttons.buttonCols[i]).attr('data-ft-buttons')==="delete")
+                	$(row).append('<td><button class="btn" type="button" value="Delete"><i class="icon-trash"></i></button></td>');
             }
         });
 	  }

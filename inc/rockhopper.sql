@@ -6,13 +6,14 @@
  * @author   Wen Bian
  * @version  1.11
  * @history
- *   09/03/2013: created out of Rockhopper schema in Perl
+ *   09/03/2013: created out of Rockhopper schema in Perl 
  *               added table RH_USER, RH_TASK, RH_SUBTASK, RH_USERLOG,
  *                           RH_ASSIGNMENT
  *
  *   09/18/2013: added tables RH_TEAM, RH_TEAM_MEMBER, RH_PRODUCT, 
  *                            RH_PRODUCT_TEAM, RH_BACKLOG, RH_BACKLOG_TASK, 
  *                            RH_MESSAGE
+ *
  *
  *
  * @notes
@@ -25,6 +26,41 @@
 
 /******************************************************************************
  *
+ * table RH_ASSIGNMENT
+ * 
+ * stores task worker info: task id - user id (dev) - user id (tester)
+ *
+ */
+DROP TABLE IF EXISTS RH_ASSIGNMENT;
+CREATE TABLE RH_ASSIGNMENT (
+
+  task_id    int        NOT NULL,
+  dev_id     smallint   NOT NULL,  
+  tester_id  smallint   NOT NULL, 
+
+  PRIMARY KEY (task_id, dev_id),
+
+  CONSTRAINT fk_RH_ASSIGNMENT_task_id_RH_TASK_id 
+             FOREIGN KEY (task_id) REFERENCES RH_TASK (id)
+             ON UPDATE CASCADE
+             ON DELETE CASCADE,
+
+  CONSTRAINT fk_RH_ASSIGNMENT_dev_id_RH_USER_id 
+             FOREIGN KEY (dev_id) REFERENCES RH_USER (id) 
+             ON UPDATE CASCADE
+             ON DELETE CASCADE,
+
+  CONSTRAINT fk_RH_ASSIGNMENT_tester_id_RH_USER_id 
+             FOREIGN KEY (tester_id) REFERENCES RH_USER (id)
+             ON UPDATE CASCADE
+             ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/******************************************************************************
+ *
+
  * table RH_USER
  *
  * stores rockhopper related user info.
@@ -219,40 +255,6 @@ CREATE TABLE RH_SUBTASK (
 
 /******************************************************************************
  *
- * table RH_ASSIGNMENT
- * 
- * stores task worker info: task id - user id (dev) - user id (tester)
- *
- */
-DROP TABLE IF EXISTS RH_ASSIGNMENT;
-CREATE TABLE RH_ASSIGNMENT (
-
-  task_id    int        NOT NULL,
-  dev_id     smallint   NOT NULL,  
-  tester_id  smallint   NOT NULL, 
-
-  PRIMARY KEY (task_id, dev_id),
-
-  CONSTRAINT fk_RH_ASSIGNMENT_task_id_RH_TASK_id 
-             FOREIGN KEY (task_id) REFERENCES RH_TASK (id)
-             ON UPDATE CASCADE
-             ON DELETE CASCADE,
-
-  CONSTRAINT fk_RH_ASSIGNMENT_dev_id_RH_USER_id 
-             FOREIGN KEY (dev_id) REFERENCES RH_USER (id) 
-             ON UPDATE CASCADE
-             ON DELETE CASCADE,
-
-  CONSTRAINT fk_RH_ASSIGNMENT_tester_id_RH_USER_id 
-             FOREIGN KEY (tester_id) REFERENCES RH_USER (id)
-             ON UPDATE CASCADE
-             ON DELETE CASCADE
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-/******************************************************************************
- *
  * table RH_USERLOG
  *
  * logs user activities
@@ -355,7 +357,6 @@ CREATE TABLE RH_PRODUCT_TEAM (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-
 /******************************************************************************
  *
  * table RH_BACKLOG
@@ -423,26 +424,30 @@ CREATE TABLE RH_BACKLOG_TASK (
  * 
  * stores user message and request.
  *
- * == status ==
+ * == read_status ==
  *   0 NOT_READ
  *   1 IS_READ
- *   2 IS_REPLIED
- *   3 IS_CLOSED   # for request only
+ *
+ * == delete_status ==
+ *   0 NOT_DELETED
+ *   1 FROMID_DELETED
+ *   2 TOID_DELETED
+ *
  *
  */
 DROP TABLE IF EXISTS RH_MESSAGE;
 CREATE TABLE RH_MESSAGE (
 
-  id           int           NOT NULL  AUTO_INCREMENT,
-  creation_ts  datetime      NOT NULL,
-  status       tinyint       NOT NULL  DEFAULT 0,
-  subject      tinytext      NOT NULL,
-  content      text          NOT NULL,
-  
+  id           smallint      NOT NULL AUTO_INCREMENT,
+  serial_id    int           NOT NULL,
+  round_num    int           NOT NULL  DEFAULT 1,
+  title        text(1024)    NOT NULL,
   from_id      smallint      NOT NULL,
   to_id        smallint      NOT NULL,
-
-  PRIMARY KEY (id),
+  message      text(65535)   NOT NULL,
+  creation_ts  datetime      NOT NULL,
+  read_status  tinyint       NOT NULL  DEFAULT 0,
+  delete_status tinyint      NOT NULL  DEFAULT 0,
 
   CONSTRAINT fk_RH_MESSAGE_from_id_RH_USER_id 
              FOREIGN KEY (from_id) REFERENCES RH_USER (id)

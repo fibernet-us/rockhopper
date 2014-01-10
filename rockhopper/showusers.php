@@ -51,9 +51,9 @@ require_once 'header.php';
               <th data-sort-ignore="true" data-hide="phone">Email</th>
               <th data-type="option" data-option="unknown:admin:project owner:developer:scrum master:chicken" option-value="0:1:2:3:4:5">Type</th>
               <th data-sort-ignore="true" data-type="option" data-option="unknown:working:idle:on leave:left" option-value="0:1:2:3:4">Status</th>
-              <th data-hide="phone,tablet" data-hide="phone, tablet">Location</th>
-              <th data-hide="phone,tablet" data-hide="phone, tablet">Timezone</th>
-              <th data-sort-ignore="true" data-hide="phone" data-ft-buttons="True"></th>
+              <th data-hide="phone,tablet">Location</th>
+              <th data-hide="phone,tablet">Timezone</th>
+              <th data-sort-ignore="true" data-hide="phone" data-ft-buttons="both"></th>
             </tr>
           </thead>
           
@@ -61,9 +61,9 @@ require_once 'header.php';
             <?php            
                 $users = $curUser->getUsers();
                 if($users) {
-                    foreach($users as $user) {
+                    foreach(array_reverse($users) as $user) {
 						// Don't forget to add current Row's id
-                        echo "<tr id =" .$user->getId(). ">;"; 
+                        echo "<tr id =" .$user->getId(). ">"; 
                         echo "<td>" . $user->getUsername() . "</td>";
                         echo "<td>" . $user->getFullname() . "</td>";
                         echo "<td>" . $user->getEmail() . "</td>";

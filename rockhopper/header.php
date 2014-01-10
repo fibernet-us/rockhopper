@@ -16,12 +16,12 @@
     
     <div class="nav-collapse collapse">
         <ul class="nav">
-        <li><a href="">Home</a></li>
+        <li><a href="index.php">Home</a></li>
         <li><a href="">Dashboard</a></li>
         <li><a href="">Task</a></li>
         <li><a href="">Sprint</a></li>
-        <li><a href="">Message</a></li>
-        <li><a href="">Project</a></li>
+        <li><a href="showmessages.php">Message</a></li>
+        <li><a href="showprojects.php">Project</a></li>
         <li><a href="showusers.php">User</a></li>
         </ul>
     </div>
@@ -30,21 +30,15 @@
     require_once 'tracking.php';
     
     $curUser = doAutoLogin($dbh);
-    if($curUser) {
-        echo "<li class=\"dropdown pull-right navbar-text user_profile\">";
-        echo "<img src=\"" . $curUser->getIconUrl() . "\">";
-        echo "<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" style=\"color: #e7e5e5\">";
-        echo " ".$curUser->getUsername();
-        echo "<span class=\"caret\"></span></a>";
-      
-        echo "<ul class=\"dropdown-menu\">";
-        echo "<li><a href=\"showprofile.php\"><i class=\"icon-edit\"></i>Profile</a></li>";
-        echo "<li><a href=\"logout.php\"><i class=\"icon-off\"></i>Logout</a></li>";
-        echo "</ul>";
-        echo "</li>";
-    }
-    
-    ?>
+    if($curUser) { ?>
+        <li class="dropdown pull-right navbar-text user_profile">
+        	<img src="<?php echo $curUser->getIconUrl() ?>"><a href="#" class="dropdown-toggle" data-toggle="dropdown" style="color: #e7e5e5"> <?php echo $curUser->getUsername() ?> <span class="caret"></span></a>
+      		<ul class="dropdown-menu">
+        		<li><a href="showprofile.php"><i class="icon-edit"></i>Profile</a></li>
+        		<li><a href="logout.php"><i class="icon-off"></i>Logout</a></li>
+         	</ul>
+        </li>
+    <?php } ?>
 
 </div>
 

@@ -3,7 +3,7 @@
 /**
  * ****************************************************************************
  *
- * checkavailable.php 
+ * check_available.php 
  * 
  * Used by index.php to check whether a username or email has been taken.
  * 

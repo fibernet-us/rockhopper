@@ -57,7 +57,7 @@ function check_username(value) {
 
 	$.ajax({
 		type:"get",
-		url:"checkavailable.php",
+		url:"check_available.php",
 		data:{checkuser:value, nametype:"isname"},
 		success:function(data){
 			if(data==0){
@@ -76,7 +76,7 @@ function check_email(value) {
 
 	$.ajax({
 		type:"get",
-		url:"checkavailable.php",
+		url:"check_available.php",
 		data:{checkuser:value, nametype:"isemail"},
 		success:function(data){
 			if(data==2){

@@ -60,7 +60,7 @@ require_once 'header.php';
               <th data-type="date" data-hide="phone,tablet">Start Date</th>
               <th data-type="date" data-hide="phone,tablet">End Date</th>
               <th data-type="progress" data-sort-ignore="true" data-hide="phone">%Completed</th>
-              <th data-sort-ignore="true" data-hide="phone" data-ft-buttons="True"></th>
+              <th data-sort-ignore="true" data-hide="phone" data-ft-buttons="both"></th>
             </tr>
           </thead>
           

@@ -1,7 +1,5 @@
 <?php
-require_once 'tracking.php';
-     
-$curUser = doAutoLogin($dbh);
+require_once 'header.php';
 
 // update user's profile 
 if($_POST['submit'] == 'Update Profile') {
@@ -80,9 +78,6 @@ $(document).ready(function(){
 </head>
 
 <body>
-<?php
-require_once 'header.php';
-?>
 <section>
 <div class="container">
   <div class="row">
@@ -154,11 +149,11 @@ require_once 'header.php';
           <label class="control-label">Status</label>
           <div class="controls">
             <select name="status" class="input-xlarge">
-              <option value="0" <?php echo $curUser->getType()==0?'selected="selected"':'' ?>>Unknown</option>
-              <option value="1" <?php echo $curUser->getType()==1?'selected="selected"':'' ?>>Working</option>
-              <option value="2" <?php echo $curUser->getType()==2?'selected="selected"':'' ?>>Idle</option>
-              <option value="3" <?php echo $curUser->getType()==3?'selected="selected"':'' ?>>On leave</option>
-              <option value="4" <?php echo $curUser->getType()==4?'selected="selected"':'' ?>>Left</option>
+              <option value="0" <?php echo $curUser->getStatus()==0?'selected="selected"':'' ?>>Unknown</option>
+              <option value="1" <?php echo $curUser->getStatus()==1?'selected="selected"':'' ?>>Working</option>
+              <option value="2" <?php echo $curUser->getStatus()==2?'selected="selected"':'' ?>>Idle</option>
+              <option value="3" <?php echo $curUser->getStatus()==3?'selected="selected"':'' ?>>On leave</option>
+              <option value="4" <?php echo $curUser->getStatus()==4?'selected="selected"':'' ?>>Left</option>
             </select>
           </div>
         </div>
@@ -225,7 +220,7 @@ require_once 'header.php';
           <button type="submit" name="submit" value="Change Password" class="btn btn-primary pull-right">Change Password</button>
         </div>
       </form>
-    </duv>
+    </div>
     
     <div  class="span6">  
       <div class="errmessage">
